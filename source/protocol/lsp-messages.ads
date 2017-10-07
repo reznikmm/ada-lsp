@@ -2481,4 +2481,47 @@ package LSP.Messages is
       applied: Boolean;
    end record;
 
+private
+
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out completion);
+   
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ClientCapabilities);
+   
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out dynamicRegistration);
+   
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out InitializeParams);
+
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out RequestMessage);
+
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out synchronization);
+   
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentClientCapabilities);
+   
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out WorkspaceClientCapabilities);
+   
+   for completion'Read use Read;
+   for ClientCapabilities'Read use Read;
+   for dynamicRegistration'Read use Read;
+   for InitializeParams'Read use Read;
+   for RequestMessage'Read use Read;
+   for synchronization'Read use Read;
+   for TextDocumentClientCapabilities'Read use Read;
+   for WorkspaceClientCapabilities'Read use Read;
+   
 end LSP.Messages;
