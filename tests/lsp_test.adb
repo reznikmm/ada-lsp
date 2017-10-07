@@ -1,10 +1,8 @@
 with LSP.Messages;
 with LSP.Request_Handlers;
 with LSP.Servers;
+with LSP.Stdio_Streams;
 with LSP.Types;
-
-pragma Unreferenced (LSP.Types);
-pragma Unreferenced (LSP.Messages);
 
 procedure LSP_Test is
    type Request_Handler is new LSP.Request_Handlers.Request_Handler
@@ -25,8 +23,10 @@ procedure LSP_Test is
       null;
    end Initialize_Request;
 
-   Server : LSP.Servers.Server;
-   pragma Unreferenced (Server);
+   Handler : aliased Request_Handler;
+   Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
+   Server  : LSP.Servers.Server;
 begin
-   null;
+   Server.Initialize (Stream'Unchecked_Access, Handler'Unchecked_Access);
+   Server.Run;
 end LSP_Test;
