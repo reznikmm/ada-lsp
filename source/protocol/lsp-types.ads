@@ -54,13 +54,13 @@ package LSP.Types is
    end record;
 
    type MarkedString (Is_String : Boolean := True) is record
-      value: LSP_String;
+      value : LSP_String;
 
       case Is_String is
          when True =>
             null;
          when False =>
-            language: LSP_String;
+            language : LSP_String;
       end case;
    end record;
 

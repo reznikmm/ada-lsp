@@ -7,7 +7,7 @@ project LSP_Protocol is
    for Main use ("lsp_test");
 
    package Compiler is
-      for Switches ("ada") use ("-g");
+      for Switches ("ada") use ("-g", "-gnatwa", "-gnatyy", "-gnatwe");
    end Compiler;
 
 end LSP_Protocol;
