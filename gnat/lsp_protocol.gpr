@@ -1,0 +1,14 @@
+with "matreshka_league";
+
+project LSP_Protocol is
+
+   for Source_Dirs use ("../source/protocol", "../tests");
+   for Object_Dir use "../.obj/protocol";
+   for Main use ("lsp_test");
+
+   package Compiler is
+      for Switches ("ada") use ("-g");
+   end Compiler;
+
+end LSP_Protocol;
+
