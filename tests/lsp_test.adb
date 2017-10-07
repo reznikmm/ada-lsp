@@ -1,5 +1,6 @@
 with LSP.Messages;
 with LSP.Request_Handlers;
+with LSP.Servers;
 with LSP.Types;
 
 pragma Unreferenced (LSP.Types);
@@ -24,6 +25,8 @@ procedure LSP_Test is
       null;
    end Initialize_Request;
 
+   Server : LSP.Servers.Server;
+   pragma Unreferenced (Server);
 begin
    null;
 end LSP_Test;
