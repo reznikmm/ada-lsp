@@ -9,7 +9,7 @@ with LSP.Types; use LSP.Types;
 
 package LSP.Messages is
    pragma Preelaborate;
-   pragma Style_Checks (Off);
+   pragma Style_Checks ("M125-bcht");
 
    --```typescript
    --interface Message {
@@ -125,7 +125,7 @@ package LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ResponseError);
    for ResponseError'Write use Write_ResponseError;
-   
+
    type Optional_ResponseError (Is_Set    : Boolean := False) is record
       case Is_Set is
          when True =>
@@ -139,13 +139,13 @@ package LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Optional_ResponseError);
    for Optional_ResponseError'Write use Write_Optional_ResponseError;
-   
+
    type ResponseMessage is new Message with record
       id: LSP_Number_Or_String;  --  or null?
 --        result: LSP_Any;
       error: Optional_ResponseError;
    end record;
-   
+
    --```typescript
    --interface NotificationMessage extends Message {
    --	/**
@@ -163,7 +163,7 @@ package LSP.Messages is
       method: LSP_String;
       params: LSP_Any;
    end record;
-   
+
    --```typescript
    --interface CancelParams {
    --	/**
@@ -175,7 +175,7 @@ package LSP.Messages is
    type CancelParams is record
       id: LSP_Number_Or_String;
    end record;
-   
+
    --```typescript
    --type DocumentUri = string;
    --```
@@ -186,7 +186,7 @@ package LSP.Messages is
    --```
 
    --  This is intentionally empty. Nothing to declare for EOL
-   
+
    --```typescript
    --interface Position {
    --	/**
@@ -204,7 +204,7 @@ package LSP.Messages is
       line: Line_Number;
       character: UTF_16_Index;
    end record;
-   
+
    --```typescript
    --interface Range {
    --	/**
@@ -222,7 +222,7 @@ package LSP.Messages is
       start: Position;
       last: Position;  --  end: is reserved work
    end record;
-   
+
    --```typescript
    --interface Location {
    --	uri: DocumentUri;
@@ -233,7 +233,7 @@ package LSP.Messages is
       uri: DocumentUri;
       span: LSP.Messages.Span;  --  range: is reserved word
    end record;
-   
+
    --+1
    --```typescript
    --namespace DiagnosticSeverity {
@@ -257,7 +257,7 @@ package LSP.Messages is
    --```
    type DiagnosticSeverity is
      (None, Error, Warning, Information, Hint);
-   
+
    --```typescript
    --interface Diagnostic {
    --	/**
@@ -295,10 +295,10 @@ package LSP.Messages is
       source: LSP_String;
       message: LSP_String;
    end record;
-   
+
    package Diagnostic_Vectors is new Ada.Containers.Vectors
      (Positive, Diagnostic);
-   
+
    --```typescript
    --interface Command {
    --	/**
@@ -321,7 +321,7 @@ package LSP.Messages is
       command: LSP_String;
       --  arguments?: any[];  ???
    end record;
-   
+
    --```typescript
    --interface TextEdit {
    --	/**
@@ -343,7 +343,7 @@ package LSP.Messages is
    end record;
 
    package TextEdit_Vectors is new Ada.Containers.Vectors (Positive, TextEdit);
-   
+
    --+N
    --```typescript
    --interface TextDocumentIdentifier {
@@ -356,7 +356,7 @@ package LSP.Messages is
    type TextDocumentIdentifier is tagged record
       uri: DocumentUri;
    end record;
-   
+
    --+N+2
    --```typescript
    --interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
@@ -369,7 +369,7 @@ package LSP.Messages is
    type VersionedTextDocumentIdentifier is new TextDocumentIdentifier with record
       version: Version_Id;
    end record;
-   
+
    --```typescript
    --export interface TextDocumentEdit {
    --	/**
@@ -397,7 +397,7 @@ package LSP.Messages is
       Hash            => League.Strings.Hash,
       Equivalent_Keys => League.Strings."=",
       "="             => TextEdit_Vectors."=");
-   
+
    --```typescript
    --export interface WorkspaceEdit {
    --	/**
@@ -418,7 +418,7 @@ package LSP.Messages is
       changes: TextDocumentEdit_Maps.Map;
       documentChanges: TextDocumentEdit_Vectors.Vector;
    end record;
-   
+
    --```typescript
    --interface TextDocumentItem {
    --	/**
@@ -449,7 +449,7 @@ package LSP.Messages is
       version: Version_Id;
       text: LSP_String;
    end record;
-   
+
    --```typescript
    --interface TextDocumentPositionParams {
    --	/**
@@ -467,7 +467,7 @@ package LSP.Messages is
       textDocument: TextDocumentIdentifier;
       position: LSP.Messages.Position;
    end record;
-   
+
    --```typescript
    --{ language: 'typescript', scheme: 'file' }
    --{ language: 'json', pattern: '**/package.json' }
@@ -497,7 +497,7 @@ package LSP.Messages is
       scheme: LSP_String;
       pattern: LSP_String;
    end record;
-   
+
    package DocumentFilter_Vectors is new Ada.Containers.Vectors
      (Positive, DocumentFilter);
    --```typescript
@@ -578,7 +578,7 @@ package LSP.Messages is
       symbol: dynamicRegistration;
       executeCommand: dynamicRegistration;
    end record;
-   
+
    --```typescript
    --/**
    -- * Text document specific client capabilities.
@@ -795,7 +795,7 @@ package LSP.Messages is
       documentLink: dynamicRegistration;
       rename: dynamicRegistration;
    end record;
-   
+
    --```typescript
    --interface ClientCapabilities {
    --	/**
@@ -819,7 +819,7 @@ package LSP.Messages is
       textDocument: TextDocumentClientCapabilities;
       --  experimental?: any;
    end record;
-   
+
    --```typescript
    --interface InitializeParams {
    --	/**
@@ -868,7 +868,7 @@ package LSP.Messages is
       capabilities: ClientCapabilities;
       trace: Trace_Kinds;
    end record;
-   
+
    --+K
    --```typescript
    --/**
@@ -1082,7 +1082,7 @@ package LSP.Messages is
       willSaveWaitUntil: Optional_Boolean;
       save: Optional_Boolean;
    end record;
-   
+
    type Optional_TextDocumentSyncOptions
      (Is_Set    : Boolean := False;
       Is_Number : Boolean := False) is
@@ -1098,7 +1098,7 @@ package LSP.Messages is
             when False => null;
          end case;
    end record;
-   
+
    type ServerCapabilities is record
       textDocumentSync: Optional_TextDocumentSyncOptions;
       hoverProvider: Optional_Boolean;
@@ -1119,7 +1119,7 @@ package LSP.Messages is
    --	executeCommandProvider?: ExecuteCommandOptions;
    --	experimental?: any;
    end record;
-   
+
    --```typescript
    --interface InitializeResult {
    --	/**
@@ -1131,11 +1131,11 @@ package LSP.Messages is
    type InitializeResult is record
       capabilities: ServerCapabilities;
    end record;
-   
+
    type Initialize_Response is new ResponseMessage with record
       result: InitializeResult;
    end record;
-   
+
    --```typescript
    --/**
    -- * Known error codes for an `InitializeError`;
@@ -1165,7 +1165,7 @@ package LSP.Messages is
    type InitializeError is record
       retry: Boolean;
    end record;
-   
+
    --+J
    --```typescript
    --export namespace MessageType {
@@ -1206,7 +1206,7 @@ package LSP.Messages is
       the_type: MessageType;  --  type: is reserver word
       message: LSP_String;
    end record;
-   
+
    --```typescript
    --interface ShowMessageRequestParams {
    --	/**
@@ -1230,7 +1230,7 @@ package LSP.Messages is
       message: LSP_String;
       actions: MessageActionItem_Vector;
    end record;
-   
+
    --```typescript
    --interface MessageActionItem {
    --	/**
@@ -1258,7 +1258,7 @@ package LSP.Messages is
       the_type: MessageType;  --  type: is reserver word
       message: LSP_String;
    end record;
-   
+
    --```typescript
    --export interface TextDocumentRegistrationOptions {
    --	/**
@@ -1271,7 +1271,7 @@ package LSP.Messages is
    type TextDocumentRegistrationOptions is tagged record
       documentSelector:  LSP.Messages.DocumentSelector;
    end record;
-   
+
    --```typescript
    --/**
    -- * Descibe options to be used when registered for text document change events.
@@ -1302,7 +1302,7 @@ package LSP.Messages is
      new TextDocumentRegistrationOptions with record
       includeText: Optional_Boolean;
    end record;
-   
+
    --```typescript
    --export interface CompletionRegistrationOptions extends TextDocumentRegistrationOptions {
    --	/**
@@ -1321,7 +1321,7 @@ package LSP.Messages is
       triggerCharacters: LSP_String_Vector;
       resolveProvider: Optional_Boolean;
    end record;
-   
+
    --```typescript
    --export interface SignatureHelpRegistrationOptions extends TextDocumentRegistrationOptions {
    --	/**
@@ -1334,7 +1334,7 @@ package LSP.Messages is
    type SignatureHelpRegistrationOptions is new TextDocumentRegistrationOptions with record
       triggerCharacters: LSP_String_Vector;
    end record;
-   
+
    --```typescript
    --export interface CodeLensRegistrationOptions extends TextDocumentRegistrationOptions {
    --	/**
@@ -1346,7 +1346,7 @@ package LSP.Messages is
    type CodeLensRegistrationOptions is new TextDocumentRegistrationOptions with record
       resolveProvider: Optional_Boolean;
    end record;
-   
+
    --```typescript
    --export interface DocumentLinkRegistrationOptions extends TextDocumentRegistrationOptions {
    --	/**
@@ -1358,7 +1358,7 @@ package LSP.Messages is
    type DocumentLinkRegistrationOptions is new TextDocumentRegistrationOptions with record
       resolveProvider: Optional_Boolean;
    end record;
-   
+
    --```typescript
    --export interface DocumentOnTypeFormattingRegistrationOptions extends TextDocumentRegistrationOptions {
    --	/**
@@ -1390,7 +1390,7 @@ package LSP.Messages is
    type ExecuteCommandRegistrationOptions is record
       commands: LSP_String_Vector;
    end record;
-   
+
    type Registration_Option (Kind : Registration_Option_Kinds := Absent) is record
       case Kind is
          when Absent =>
@@ -1447,13 +1447,13 @@ package LSP.Messages is
       method: LSP_String;
       registerOptions: Registration_Option;
    end record;
-   
+
    type Registration_Array is array (Positive range <>) of Registration;
 
    type RegistrationParams (Length : Natural) is record
       registrations: Registration_Array (1 .. Length);
    end record;
-   
+
    --```typescript
    --/**
    -- * General parameters to unregister a capability.
@@ -1479,13 +1479,13 @@ package LSP.Messages is
       id: LSP_String;
       method: LSP_String;
    end record;
-   
+
    package Unregistration_Vectors is new Ada.Containers.Vectors
      (Positive, Unregistration);
 
    type UnregistrationParams is
      new Unregistration_Vectors.Vector with null record;
-   
+
    --```typescript
    --interface DidChangeConfigurationParams {
    --	/**
@@ -1498,7 +1498,7 @@ package LSP.Messages is
       --  settings: any; ???
       null;
    end record;
-   
+
    --```typescript
    --interface DidOpenTextDocumentParams {
    --	/**
@@ -1510,7 +1510,7 @@ package LSP.Messages is
    type DidOpenTextDocumentParams is record
       textDocument: TextDocumentItem;
    end record;
-   
+
    --```typescript
    --interface DidChangeTextDocumentParams {
    --	/**
@@ -1554,7 +1554,7 @@ package LSP.Messages is
       rangeLength: LSP_Number;
       text: LSP_String;
    end record;
-   
+
    package TextDocumentContentChangeEvent_Vectors is new Ada.Containers.Vectors
      (Positive, TextDocumentContentChangeEvent);
 
@@ -1562,7 +1562,7 @@ package LSP.Messages is
       textDocument: VersionedTextDocumentIdentifier;
       contentChanges: TextDocumentContentChangeEvent_Vectors.Vector;
    end record;
-   
+
    --```typescript
    --/**
    -- * The parameters send in a will save text document notification.
@@ -1607,7 +1607,7 @@ package LSP.Messages is
       textDocument: TextDocumentIdentifier;
       reason: TextDocumentSaveReason;
    end record;
-   
+
    --```typescript
    --interface DidSaveTextDocumentParams {
    --	/**
@@ -1626,7 +1626,7 @@ package LSP.Messages is
       textDocument: TextDocumentIdentifier;
       text: Optional_String;
    end record;
-   
+
    --```typescript
    --interface DidCloseTextDocumentParams {
    --	/**
@@ -1638,7 +1638,7 @@ package LSP.Messages is
    type DidCloseTextDocumentParams is record
       textDocument: TextDocumentIdentifier;
    end record;
-   
+
    --```typescript
    --/**
    -- * An event describing a file change.
@@ -1677,9 +1677,9 @@ package LSP.Messages is
       uri: DocumentUri;
       the_type : FileChangeType;  -- type: is reserver word
    end record;
-   
+
    package FileEvent_Vectors is new Ada.Containers.Vectors (Positive, FileEvent);
-   
+
    --```typescript
    --interface DidChangeWatchedFilesParams {
    --	/**
@@ -1691,7 +1691,7 @@ package LSP.Messages is
    type DidChangeWatchedFilesParams is record
       changes: FileEvent_Vectors.Vector;
    end record;
-   
+
    --```typescript
    --interface PublishDiagnosticsParams {
    --	/**
@@ -1709,7 +1709,7 @@ package LSP.Messages is
       uri: DocumentUri;
       diagnostics: Diagnostic_Vectors.Vector;
    end record;
-   
+
    --```typescript
    --/**
    -- * Represents a collection of [completion items](#CompletionItem) to be presented
@@ -1870,7 +1870,7 @@ package LSP.Messages is
       Color,
       File,
       Reference);
-   
+
    type CompletionItem is record
       label: LSP_String;
       kind: Optional_Number;   -- ???
@@ -1886,7 +1886,7 @@ package LSP.Messages is
       command: LSP.Messages.Command;  --  Optional ???
    --	data?: any
    end record;
-   
+
    package CompletionItem_Vectors is new Ada.Containers.Vectors
      (Positive, CompletionItem);
 
@@ -1894,7 +1894,7 @@ package LSP.Messages is
       isIncomplete: Boolean;
       items: CompletionItem_Vectors.Vector;
    end record;
-   
+
    --```typescript
    --/**
    -- * MarkedString can be used to render human readable text. It is either a markdown string
@@ -1913,7 +1913,7 @@ package LSP.Messages is
    --```
    package MarkedString_Vectors is new Ada.Containers.Vectors
      (Positive, MarkedString);
-   
+
    --```typescript
    --/**
    -- * The result of a hover request.
@@ -1935,7 +1935,7 @@ package LSP.Messages is
       contents: MarkedString_Vectors.Vector;
       Span: LSP.Messages.Span;  --  Optional ???
    end record;
-   
+
    --```typescript
    --/**
    -- * Signature help represents the signature of something
@@ -2017,25 +2017,25 @@ package LSP.Messages is
       label: LSP_String;
       documentation: Optional_String;
    end record;
-   
+
    package ParameterInformation_Vectors is new Ada.Containers.Vectors
      (Positive, ParameterInformation);
-   
+
    type SignatureInformation is record
       label: LSP_String;
       documentation: Optional_String;
       parameters: ParameterInformation_Vectors.Vector;
    end record;
-   
+
    package SignatureInformation_Vectors is new Ada.Containers.Vectors
      (Positive, SignatureInformation);
-   
+
    type SignatureHelp is record
 	signatures: SignatureInformation_Vectors.Vector;
 	activeSignature: Optional_Number;
 	activeParameter: Optional_Number;
    end record;
-   
+
    --```typescript
    --interface ReferenceContext {
    --	/**
@@ -2047,7 +2047,7 @@ package LSP.Messages is
    type ReferenceContext is record
       includeDeclaration: Boolean;
    end record;
-   
+
    --```typescript
    --interface ReferenceParams extends TextDocumentPositionParams {
    --	context: ReferenceContext
@@ -2102,7 +2102,7 @@ package LSP.Messages is
       span: LSP.Messages.Span;
       kind: DocumentHighlightKind;
    end record;
-   
+
    --```typescript
    --interface DocumentSymbolParams {
    --	/**
@@ -2114,7 +2114,7 @@ package LSP.Messages is
    type DocumentSymbolParams is record
       textDocument: TextDocumentIdentifier;
    end record;
-   
+
    --```typescript
    --/**
    -- * Represents information about programming constructs like variables, classes,
@@ -2203,7 +2203,7 @@ package LSP.Messages is
       location: LSP.Messages.Location;
       containerName: Optional_String;
    end record;
-   
+
    --```typescript
    --/**
    -- * The parameters of a Workspace Symbol Request.
@@ -2218,7 +2218,7 @@ package LSP.Messages is
    type WorkspaceSymbolParams is record
       query: LSP_String;
    end record;
-   
+
    --```typescript
    --/**
    -- * Params for the CodeActionRequest
@@ -2254,13 +2254,13 @@ package LSP.Messages is
    type CodeActionContext is record
       diagnostics: Diagnostic_Vectors.Vector;
    end record;
-   
+
    type CodeActionParams is record
       textDocument: TextDocumentIdentifier;
       span: LSP.Messages.Span;
       context: CodeActionContext;
    end record;
-   
+
    --```typescript
    --interface CodeLensParams {
    --	/**
@@ -2272,7 +2272,7 @@ package LSP.Messages is
    type CodeLensParams is record
       textDocument: TextDocumentIdentifier;
    end record;
-   
+
    --```typescript
    --/**
    -- * A code lens represents a command that should be shown along with
@@ -2304,7 +2304,7 @@ package LSP.Messages is
       command: LSP.Messages.Command;  --  Optional ???
       --  data?: any
    end record;
-   
+
    --```typescript
    --interface DocumentLinkParams {
    --	/**
@@ -2316,7 +2316,7 @@ package LSP.Messages is
    type DocumentLinkParams is record
       textDocument: TextDocumentIdentifier;
    end record;
-   
+
    --```typescript
    --/**
    -- * A document link is a range in a text document that links to an internal or external resource, like another
@@ -2337,7 +2337,7 @@ package LSP.Messages is
       span: LSP.Messages.Span;
       target: DocumentUri;  --  Optional ???
    end record;
-   
+
    --```typescript
    --interface DocumentFormattingParams {
    --	/**
@@ -2376,12 +2376,12 @@ package LSP.Messages is
       insertSpaces: Boolean;
       --  [key: string]: boolean | number | string; ???
    end record;
-   
+
    type DocumentFormattingParams is record
       textDocument: TextDocumentIdentifier;
       options: FormattingOptions;
    end record;
-   
+
    --```typescript
    --interface DocumentRangeFormattingParams {
    --	/**
@@ -2405,7 +2405,7 @@ package LSP.Messages is
       span: LSP.Messages.Span;
       options: FormattingOptions;
    end record;
-   
+
    --```typescript
    --interface DocumentOnTypeFormattingParams {
    --	/**
@@ -2435,7 +2435,7 @@ package LSP.Messages is
       ch: LSP_String;
       options: FormattingOptions;
    end record;
-   
+
    --```typescript
    --interface RenameParams {
    --	/**
@@ -2461,7 +2461,7 @@ package LSP.Messages is
       position: LSP.Messages.Position;
       newName: LSP_String;
    end record;
-   
+
    --```typescript
    --export interface ExecuteCommandParams {
    --
@@ -2479,7 +2479,7 @@ package LSP.Messages is
       command: LSP_String;
       --  arguments?: any[];
    end record;
-   
+
    --```typescript
    --export interface ApplyWorkspaceEditParams {
    --	/**
@@ -2491,7 +2491,7 @@ package LSP.Messages is
    type ApplyWorkspaceEditParams is record
       edit: WorkspaceEdit;
    end record;
-   
+
    --```typescript
    --export interface ApplyWorkspaceEditResponse {
    --	/**
@@ -2509,15 +2509,15 @@ private
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion);
-   
+
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out ClientCapabilities);
-   
+
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
-   
+
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out InitializeParams);
@@ -2529,11 +2529,11 @@ private
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization);
-   
+
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out TextDocumentClientCapabilities);
-   
+
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
@@ -2541,7 +2541,7 @@ private
    not overriding procedure Write_Initialize_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Initialize_Response);
-   
+
    not overriding procedure Write_InitializeResult
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : InitializeResult);
@@ -2563,7 +2563,7 @@ private
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
    for ServerCapabilities'Write use Write_ServerCapabilities;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
-   
+
    for completion'Read use Read;
    for ClientCapabilities'Read use Read;
    for dynamicRegistration'Read use Read;
@@ -2572,5 +2572,5 @@ private
    for synchronization'Read use Read;
    for TextDocumentClientCapabilities'Read use Read;
    for WorkspaceClientCapabilities'Read use Read;
-   
+
 end LSP.Messages;
