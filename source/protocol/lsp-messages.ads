@@ -120,11 +120,30 @@ package LSP.Messages is
       message: LSP_String;
       data: LSP_Any;
    end record;
+
+   not overriding procedure Write_ResponseError
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ResponseError);
+   for ResponseError'Write use Write_ResponseError;
+   
+   type Optional_ResponseError (Is_Set    : Boolean := False) is record
+      case Is_Set is
+         when True =>
+            Value : ResponseError;
+         when False =>
+            null;
+      end case;
+   end record;
+
+   not overriding procedure Write_Optional_ResponseError
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_ResponseError);
+   for Optional_ResponseError'Write use Write_Optional_ResponseError;
    
    type ResponseMessage is new Message with record
       id: LSP_Number_Or_String;  --  or null?
-      result: LSP_Any;
-      error: ResponseError;
+--        result: LSP_Any;
+      error: Optional_ResponseError;
    end record;
    
    --```typescript
@@ -1111,6 +1130,10 @@ package LSP.Messages is
    --```
    type InitializeResult is record
       capabilities: ServerCapabilities;
+   end record;
+   
+   type Initialize_Response is new ResponseMessage with record
+      result: InitializeResult;
    end record;
    
    --```typescript
@@ -2514,6 +2537,32 @@ private
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
+
+   not overriding procedure Write_Initialize_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Initialize_Response);
+   
+   not overriding procedure Write_InitializeResult
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : InitializeResult);
+
+   not overriding procedure Write_Optional_TextDocumentSyncOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_TextDocumentSyncOptions);
+
+   not overriding procedure Write_ServerCapabilities
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ServerCapabilities);
+
+   not overriding procedure Write_TextDocumentSyncOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextDocumentSyncOptions);
+
+   for Initialize_Response'Write use Write_Initialize_Response;
+   for InitializeResult'Write use Write_InitializeResult;
+   for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
+   for ServerCapabilities'Write use Write_ServerCapabilities;
+   for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
    
    for completion'Read use Read;
    for ClientCapabilities'Read use Read;

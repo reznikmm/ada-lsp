@@ -1,3 +1,4 @@
+with League.Holders;
 with League.JSON.Streams;
 with League.JSON.Values;
 
@@ -36,6 +37,26 @@ package body LSP.Messages is
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
      Item   : out LSP.Types.LSP_String);
+
+   procedure Write_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_Number);
+
+   procedure Write_Optional_Boolean
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.Optional_Boolean);
+
+   procedure Write_Optional_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.Optional_Number);
+
+   procedure Write_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_String);
 
    ----------
    -- Read --
@@ -342,6 +363,7 @@ package body LSP.Messages is
          Item := (Is_Set => True, Value => Value.To_String);
       end if;
    end Read_Optional_String;
+
    -----------------
    -- Read_String --
    -----------------
@@ -354,5 +376,234 @@ package body LSP.Messages is
       Stream.Key (Key);
       Item := Stream.Read.To_String;
    end Read_String;
+
+   -------------------------------
+   -- Write_Initialize_Response --
+   -------------------------------
+
+   not overriding procedure Write_Initialize_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Initialize_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"jsonrpc", V.jsonrpc);
+
+      if V.id.Is_Number then
+         Write_Number (JS, +"id", V.id.Number);
+      elsif not V.id.String.Is_Empty then
+         Write_String (JS, +"id", V.id.String);
+      end if;
+
+      JS.Key (+"error");
+      Optional_ResponseError'Write (S, V.error);
+      JS.Key (+"result");
+      InitializeResult'Write (S, V.result);
+      JS.End_Object;
+   end Write_Initialize_Response;
+
+   ----------------------------
+   -- Write_InitializeResult --
+   ----------------------------
+
+   not overriding procedure Write_InitializeResult
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : InitializeResult)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"capabilities");
+      ServerCapabilities'Write (S, V.capabilities);
+      JS.End_Object;
+   end Write_InitializeResult;
+
+   ------------------
+   -- Write_Number --
+   ------------------
+
+   procedure Write_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_Number) is
+   begin
+      Stream.Key (Key);
+      Stream.Write
+        (League.JSON.Values.To_JSON_Value
+           (League.Holders.Universal_Integer (Item)));
+   end Write_Number;
+
+   ----------------------------
+   -- Write_Optional_Boolean --
+   ----------------------------
+
+   procedure Write_Optional_Boolean
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.Optional_Boolean) is
+   begin
+      if Item.Is_Set then
+         Stream.Key (Key);
+         Stream.Write (League.JSON.Values.To_JSON_Value (Item.Value));
+      end if;
+   end Write_Optional_Boolean;
+
+   ---------------------------
+   -- Write_Optional_Number --
+   ---------------------------
+
+   procedure Write_Optional_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.Optional_Number) is
+   begin
+      if Item.Is_Set then
+         Stream.Key (Key);
+         Write_Number (Stream, Key, Item.Value);
+      end if;
+   end Write_Optional_Number;
+
+   ----------------------------------
+   -- Write_Optional_ResponseError --
+   ----------------------------------
+
+   not overriding procedure Write_Optional_ResponseError
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_ResponseError) is
+   begin
+      if V.Is_Set then
+         ResponseError'Write (S, V.Value);
+      end if;
+   end Write_Optional_ResponseError;
+
+   --------------------------------------------
+   -- Write_Optional_TextDocumentSyncOptions --
+   --------------------------------------------
+
+   not overriding procedure Write_Optional_TextDocumentSyncOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_TextDocumentSyncOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      if not V.Is_Set then
+         return;
+      elsif V.Is_Number then
+         JS.Write
+           (League.JSON.Values.To_JSON_Value
+              (League.Holders.Universal_Integer (V.Value)));
+      else
+         TextDocumentSyncOptions'Write (S, V.Options);
+      end if;
+   end Write_Optional_TextDocumentSyncOptions;
+
+   -------------------------
+   -- Write_ResponseError --
+   -------------------------
+
+   not overriding procedure Write_ResponseError
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ResponseError)
+   is
+      use type League.Holders.Universal_Integer;
+
+      Map : constant array (ErrorCodes) of League.Holders.Universal_Integer :=
+        (ParseError           => -32700,
+         InvalidRequest       => -32600,
+         MethodNotFound       => -32601,
+         InvalidParams        => -32602,
+         InternalError        => -32603,
+         serverErrorStart     => -32099,
+         serverErrorEnd       => -32000,
+         ServerNotInitialized => -32002,
+         UnknownErrorCode     => -32001,
+         RequestCancelled     => -32800);
+
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"code");
+      JS.Write (League.JSON.Values.To_JSON_Value (Map (V.code)));
+      Write_String (JS, +"message", V.message);
+
+      if not V.data.Is_Empty and not V.data.Is_Empty then
+         JS.Key (+"data");
+         JS.Write (V.data);
+      end if;
+
+      JS.End_Object;
+   end Write_ResponseError;
+
+   ------------------------------
+   -- Write_ServerCapabilities --
+   ------------------------------
+
+   not overriding procedure Write_ServerCapabilities
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ServerCapabilities)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocumentSync");
+      Optional_TextDocumentSyncOptions'Write (S, V.textDocumentSync);
+      Write_Optional_Boolean (JS, +"hoverProvider", V.hoverProvider);
+      Write_Optional_Boolean (JS, +"definitionProvider", V.definitionProvider);
+      Write_Optional_Boolean (JS, +"referencesProvider", V.referencesProvider);
+      Write_Optional_Boolean
+        (JS, +"documentHighlightProvider", V.documentHighlightProvider);
+      Write_Optional_Boolean
+        (JS, +"documentSymbolProvider", V.documentSymbolProvider);
+      Write_Optional_Boolean
+        (JS, +"workspaceSymbolProvider", V.workspaceSymbolProvider);
+      Write_Optional_Boolean (JS, +"codeActionProvider", V.codeActionProvider);
+      Write_Optional_Boolean
+        (JS, +"documentFormattingProvider", V.documentFormattingProvider);
+      Write_Optional_Boolean
+        (JS,
+         +"documentRangeFormattingProvider",
+         V.documentRangeFormattingProvider);
+      Write_Optional_Boolean (JS, +"renameProvider", V.renameProvider);
+      JS.End_Object;
+   end Write_ServerCapabilities;
+
+   ------------------
+   -- Write_String --
+   ------------------
+
+   procedure Write_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_String) is
+   begin
+      Stream.Key (Key);
+      Stream.Write (League.JSON.Values.To_JSON_Value (Item));
+   end Write_String;
+
+   -----------------------------------
+   -- Write_TextDocumentSyncOptions --
+   -----------------------------------
+
+   not overriding procedure Write_TextDocumentSyncOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextDocumentSyncOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Optional_Boolean (JS, +"openClose", V.openClose);
+      Write_Optional_Number (JS, +"change", V.change);
+      Write_Optional_Boolean (JS, +"willSave", V.willSave);
+      Write_Optional_Boolean (JS, +"willSaveWaitUntil", V.willSaveWaitUntil);
+      Write_Optional_Boolean (JS, +"save", V.save);
+      JS.End_Object;
+   end Write_TextDocumentSyncOptions;
 
 end LSP.Messages;

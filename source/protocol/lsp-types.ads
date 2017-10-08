@@ -29,7 +29,7 @@ package LSP.Types is
    type Optional_Number (Is_Set : Boolean := False) is record
       case Is_Set is
          when True =>
-            Value : Natural;
+            Value : LSP_Number;
          when False =>
             null;
       end case;
