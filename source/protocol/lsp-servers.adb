@@ -20,8 +20,8 @@ package body LSP.Servers is
        League.Strings.To_Universal_String;
 
    function Do_Initialize
-    (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
    function Process_Request_From_Stream
@@ -48,8 +48,8 @@ package body LSP.Servers is
    -------------------
 
    function Do_Initialize
-    (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.InitializeParams;
