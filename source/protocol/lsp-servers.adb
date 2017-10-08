@@ -4,6 +4,7 @@ with League.JSON.Arrays;
 with League.JSON.Documents;
 with League.JSON.Objects;
 with League.JSON.Streams;
+with League.JSON.Values;
 with League.Stream_Element_Vectors;
 with League.Strings;
 
@@ -18,52 +19,48 @@ package body LSP.Servers is
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
 
-   procedure Do_Initialize
-     (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access;
-      Request_Id : LSP.Types.LSP_Number_Or_String);
+   function Do_Initialize
+    (Stream     : access Ada.Streams.Root_Stream_Type'Class;
+     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
 
-   package Requests is
-      type RequestMessage is new LSP.Messages.RequestMessage with record
-         Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
-         Handler    : LSP.Request_Handlers.Request_Handler_Access;
-      end record;
+   function Process_Request_From_Stream
+    (Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
+     Handler    : LSP.Request_Handlers.Request_Handler_Access;
+     Stream     : access Ada.Streams.Root_Stream_Type'Class)
+       return LSP.Messages.ResponseMessage'Class;
 
-      overriding procedure Read_Parameters
-        (Self   : RequestMessage;
-         Stream : access Ada.Streams.Root_Stream_Type'Class);
-   end Requests;
+   procedure Read_Number_Or_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number_Or_String);
 
-   package body Requests is
+   function To_Element_Vector
+    (Stream : in out League.JSON.Streams.JSON_Stream)
+      return League.Stream_Element_Vectors.Stream_Element_Vector;
 
-      overriding procedure Read_Parameters
-       (Self   : RequestMessage;
-        Stream : access Ada.Streams.Root_Stream_Type'Class) is
-      begin
-         Self.Dispatcher.Dispatch
-           (Request => Self,
-            Stream  => Stream,
-            Handler => Self.Handler);
-      end Read_Parameters;
-   end Requests;
+   procedure Write_JSON_RPC
+     (Stream : access Ada.Streams.Root_Stream_Type'Class;
+      Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
 
    -------------------
    -- Do_Initialize --
    -------------------
 
-   procedure Do_Initialize
+   function Do_Initialize
     (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access;
-     Request_Id : LSP.Types.LSP_Number_Or_String)
+     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+       return LSP.Messages.ResponseMessage'Class
    is
-      Params : LSP.Messages.InitializeParams;
-      Response : LSP.Messages.ResponseMessage;
+      Params   : LSP.Messages.InitializeParams;
+      Response : LSP.Messages.Initialize_Response;
    begin
       LSP.Messages.InitializeParams'Read (Stream, Params);
       Handler.Initialize_Request
         (Response => Response,
-         Id       => Request_Id,
          Value    => Params);
+
+      return Response;
    end Do_Initialize;
 
    ----------------
@@ -79,6 +76,60 @@ package body LSP.Servers is
       Self.Handler := Handler;
       Self.Dispatcher.Register (+"initialize", Do_Initialize'Access);
    end Initialize;
+
+   ---------------------------------
+   -- Process_Request_From_Stream --
+   ---------------------------------
+
+   function Process_Request_From_Stream
+    (Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
+     Handler    : LSP.Request_Handlers.Request_Handler_Access;
+     Stream     : access Ada.Streams.Root_Stream_Type'Class)
+       return LSP.Messages.ResponseMessage'Class
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (Stream.all);
+
+      Request_Id : LSP.Types.LSP_Number_Or_String;
+      Version    : LSP.Types.LSP_String;
+      Method     : LSP.Types.LSP_String;
+   begin
+      JS.Start_Object;
+      LSP.Types.Read_String (JS, +"jsonrpc", Version);
+      LSP.Types.Read_String (JS, +"method", Method);
+      Read_Number_Or_String (JS, +"id", Request_Id);
+      JS.Key (+"params");
+
+      return Result : LSP.Messages.ResponseMessage'Class := Dispatcher.Dispatch
+        (Method  => Method,
+         Stream  => Stream,
+         Handler => Handler)
+      do
+         Result.jsonrpc := +"2.0";
+         Result.id := Request_Id;
+      end return;
+   end Process_Request_From_Stream;
+
+   ---------------------------
+   -- Read_Number_Or_String --
+   ---------------------------
+
+   procedure Read_Number_Or_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number_Or_String)
+   is
+      Value : League.JSON.Values.JSON_Value;
+   begin
+      Stream.Key (Key);
+      Value := Stream.Read;
+
+      if Value.Is_String then
+         Item := (Is_Number => False, String => Value.To_String);
+      else
+         Item := (Is_Number => True, Number => Integer (Value.To_Integer));
+      end if;
+   end Read_Number_Or_String;
 
    ---------
    -- Run --
@@ -160,23 +211,30 @@ package body LSP.Servers is
       procedure Parse_JSON
         (Vector : League.Stream_Element_Vectors.Stream_Element_Vector)
       is
-         JSON_Stream    : aliased League.JSON.Streams.JSON_Stream;
+         In_Stream      : aliased League.JSON.Streams.JSON_Stream;
          Document       : League.JSON.Documents.JSON_Document;
          JSON_Object    : League.JSON.Objects.JSON_Object;
          JSON_Array     : League.JSON.Arrays.JSON_Array;
-         Request        : Requests.RequestMessage :=
-           (Dispatcher => Self.Dispatcher'Unchecked_Access,
-            Handler    => Self.Handler,
-            others     => <>);
       begin
          Document := League.JSON.Documents.From_JSON (Vector);
          JSON_Object := Document.To_JSON_Object;
          JSON_Array.Append (JSON_Object.To_JSON_Value);
-         JSON_Stream.Set_JSON_Document (JSON_Array.To_JSON_Document);
+         In_Stream.Set_JSON_Document (JSON_Array.To_JSON_Document);
 
-         LSP.Messages.RequestMessage'Read
-           (JSON_Stream'Access,
-            LSP.Messages.RequestMessage (Request));
+         declare
+            Out_Stream : aliased League.JSON.Streams.JSON_Stream;
+            Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
+            Response   : constant LSP.Messages.ResponseMessage'Class :=
+              Process_Request_From_Stream
+                (Dispatcher => Self.Dispatcher'Access,
+                 Handler    => Self.Handler,
+                 Stream     => In_Stream'Access);
+         begin
+            LSP.Messages.ResponseMessage'Class'Write
+              (Out_Stream'Access, Response);
+            Output := To_Element_Vector (Out_Stream);
+            Write_JSON_RPC (Self.Stream, Output);
+         end;
       end Parse_JSON;
 
       ----------------
@@ -241,22 +299,46 @@ package body LSP.Servers is
       Value : LSP.Messages.NotificationMessage)
    is
       JSON_Stream    : aliased League.JSON.Streams.JSON_Stream;
-      Document       : League.JSON.Documents.JSON_Document;
       Element_Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
    begin
       LSP.Messages.NotificationMessage'Write (JSON_Stream'Access, Value);
-      Document := JSON_Stream.Get_JSON_Document;
-      Element_Vector := Document.To_JSON;
-
-      declare
-         Image  : constant String := Ada.Streams.Stream_Element_Count'Image
-           (Element_Vector.Length);
-         Header : constant String := "Content-Length:" & Image
-           & New_Line & New_Line;
-      begin
-         String'Write (Self.Stream, Header);
-         Self.Stream.Write (Element_Vector.To_Stream_Element_Array);
-      end;
+      Element_Vector := To_Element_Vector (JSON_Stream);
+      Write_JSON_RPC (Self.Stream, Element_Vector);
    end Send_Notification;
+
+   -----------------------
+   -- To_Element_Vector --
+   -----------------------
+
+   function To_Element_Vector
+    (Stream : in out League.JSON.Streams.JSON_Stream)
+      return League.Stream_Element_Vectors.Stream_Element_Vector
+   is
+      Document    : constant League.JSON.Documents.JSON_Document :=
+        Stream.Get_JSON_Document;
+      JSON_Array  : constant League.JSON.Arrays.JSON_Array :=
+        Document.To_JSON_Array;
+      JSON_Object : constant League.JSON.Objects.JSON_Object :=
+        JSON_Array.First_Element.To_Object;
+   begin
+      return JSON_Object.To_JSON_Document.To_JSON;
+   end To_Element_Vector;
+
+   --------------------
+   -- Write_JSON_RPC --
+   --------------------
+
+   procedure Write_JSON_RPC
+     (Stream : access Ada.Streams.Root_Stream_Type'Class;
+      Vector : League.Stream_Element_Vectors.Stream_Element_Vector)
+   is
+      Image  : constant String := Ada.Streams.Stream_Element_Count'Image
+        (Vector.Length);
+      Header : constant String := "Content-Length:" & Image
+        & New_Line & New_Line;
+   begin
+      String'Write (Stream, Header);
+      Stream.Write (Vector.To_Stream_Element_Array);
+   end Write_JSON_RPC;
 
 end LSP.Servers;

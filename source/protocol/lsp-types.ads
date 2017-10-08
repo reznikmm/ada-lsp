@@ -1,6 +1,7 @@
-with League.Strings;
-with League.String_Vectors;
+with League.JSON.Streams;
 with League.JSON.Values;
+with League.String_Vectors;
+with League.Strings;
 
 package LSP.Types is
    pragma Preelaborate;
@@ -78,5 +79,10 @@ package LSP.Types is
                     Document_Link_Registration_Option,
       Document_On_Type_Formatting_Registration_Option,
                   Execute_Command_Registration_Option);
+
+   procedure Read_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_String);
 
 end LSP.Types;

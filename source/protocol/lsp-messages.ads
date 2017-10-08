@@ -45,11 +45,6 @@ package LSP.Messages is
 --        params: LSP_Any;
    end record;
 
-   not overriding procedure Read_Parameters
-    (Self   : RequestMessage;
-     Stream : access Ada.Streams.Root_Stream_Type'Class) is null;
-   --  This procedure called when a server reading 'params:' object
-
    --```typescript
    --interface ResponseMessage extends Message {
    --	/**
@@ -2524,10 +2519,6 @@ private
 
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : out RequestMessage);
-
-   not overriding procedure Read
-     (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization);
 
    not overriding procedure Read
@@ -2568,7 +2559,6 @@ private
    for ClientCapabilities'Read use Read;
    for dynamicRegistration'Read use Read;
    for InitializeParams'Read use Read;
-   for RequestMessage'Read use Read;
    for synchronization'Read use Read;
    for TextDocumentClientCapabilities'Read use Read;
    for WorkspaceClientCapabilities'Read use Read;

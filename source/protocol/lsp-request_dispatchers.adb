@@ -4,19 +4,20 @@ package body LSP.Request_Dispatchers is
    -- Dispatch --
    --------------
 
-   not overriding procedure Dispatch
+   not overriding function Dispatch
      (Self    : in out Request_Dispatcher;
-      Request : LSP.Messages.RequestMessage'Class;
+      Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
       Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+        return LSP.Messages.ResponseMessage'Class
    is
-      Cursor : Maps.Cursor := Self.Map.Find (Request.method);
+      Cursor : Maps.Cursor := Self.Map.Find (Method);
    begin
       if not Maps.Has_Element (Cursor) then
          Cursor := Self.Map.Find (League.Strings.Empty_Universal_String);
       end if;
 
-      Maps.Element (Cursor) (Stream, Handler, Request.id);
+      return Maps.Element (Cursor) (Stream, Handler);
    end Dispatch;
 
    --------------

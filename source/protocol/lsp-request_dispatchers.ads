@@ -13,21 +13,22 @@ package LSP.Request_Dispatchers is
 
    type Request_Dispatcher is tagged limited private;
 
-   type Parameter_Handler_Access is access procedure
+   type Parameter_Handler_Access is access function
     (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access;
-     Request_Id : LSP.Types.LSP_Number_Or_String);
+     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+       return LSP.Messages.ResponseMessage'Class;
 
    not overriding procedure Register
     (Self   : in out Request_Dispatcher;
      Method : League.Strings.Universal_String;
      Value  : Parameter_Handler_Access);
 
-   not overriding procedure Dispatch
+   not overriding function Dispatch
      (Self    : in out Request_Dispatcher;
-      Request : LSP.Messages.RequestMessage'Class;
+      Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access);
+      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
 
 private
 

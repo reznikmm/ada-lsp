@@ -13,11 +13,6 @@ package body LSP.Messages is
      Key    : League.Strings.Universal_String;
      Item   : out LSP.Messages.DocumentUri);
 
-   procedure Read_Number_Or_String
-    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
-     Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_Number_Or_String);
-
    procedure Read_Optional_Boolean
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
@@ -36,7 +31,7 @@ package body LSP.Messages is
    procedure Read_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_String);
+     Item   : out LSP.Types.LSP_String) renames LSP.Types.Read_String;
 
    procedure Write_Number
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -155,26 +150,6 @@ package body LSP.Messages is
 
    not overriding procedure Read
      (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : out RequestMessage)
-   is
-      JS : League.JSON.Streams.JSON_Stream'Class renames
-        League.JSON.Streams.JSON_Stream'Class (S.all);
-   begin
-      JS.Start_Object;
-      Read_String (JS, +"jsonrpc", V.jsonrpc);
-      Read_String (JS, +"method", V.method);
-      Read_Number_Or_String (JS, +"id", V.id);
-      JS.Key (+"params");
-      RequestMessage'Class (V).Read_Parameters (S);
-      JS.End_Object;
-   end Read;
-
-   ----------
-   -- Read --
-   ----------
-
-   not overriding procedure Read
-     (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization)
    is
       JS : League.JSON.Streams.JSON_Stream'Class renames
@@ -281,27 +256,6 @@ package body LSP.Messages is
    end Read_IRI;
 
    ---------------------------
-   -- Read_Number_Or_String --
-   ---------------------------
-
-   procedure Read_Number_Or_String
-    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
-     Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_Number_Or_String)
-   is
-      Value : League.JSON.Values.JSON_Value;
-   begin
-      Stream.Key (Key);
-      Value := Stream.Read;
-
-      if Value.Is_String then
-         Item := (Is_Number => False, String => Value.To_String);
-      else
-         Item := (Is_Number => True, Number => Integer (Value.To_Integer));
-      end if;
-   end Read_Number_Or_String;
-
-   ---------------------------
    -- Read_Optional_Boolean --
    ---------------------------
 
@@ -363,19 +317,6 @@ package body LSP.Messages is
          Item := (Is_Set => True, Value => Value.To_String);
       end if;
    end Read_Optional_String;
-
-   -----------------
-   -- Read_String --
-   -----------------
-
-   procedure Read_String
-    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
-     Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_String) is
-   begin
-      Stream.Key (Key);
-      Item := Stream.Read.To_String;
-   end Read_String;
 
    -------------------------------
    -- Write_Initialize_Response --
