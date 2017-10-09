@@ -480,45 +480,6 @@ package body LSP.Messages is
       end if;
    end Write_Optional_Boolean;
 
-   ------------------------------------
-   -- Write_Optional_CodeLensOptions --
-   ------------------------------------
-
-   not overriding procedure Write_Optional_CodeLensOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_CodeLensOptions) is
-   begin
-      if V.Is_Set then
-         CodeLensOptions'Write (S, V.Value);
-      end if;
-   end Write_Optional_CodeLensOptions;
-
-   --------------------------------------
-   -- Write_Optional_CompletionOptions --
-   --------------------------------------
-
-   not overriding procedure Write_Optional_CompletionOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_CompletionOptions) is
-   begin
-      if V.Is_Set then
-         CompletionOptions'Write (S, V.Value);
-      end if;
-   end Write_Optional_CompletionOptions;
-
-   ----------------------------------------------------
-   -- Write_Optional_DocumentOnTypeFormattingOptions --
-   ----------------------------------------------------
-
-   not overriding procedure Write_Optional_DocumentOnTypeFormattingOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_DocumentOnTypeFormattingOptions) is
-   begin
-      if V.Is_Set then
-         DocumentOnTypeFormattingOptions'Write (S, V.Value);
-      end if;
-   end Write_Optional_DocumentOnTypeFormattingOptions;
-
    ---------------------------
    -- Write_Optional_Number --
    ---------------------------
@@ -533,32 +494,6 @@ package body LSP.Messages is
          Write_Number (Stream, Key, Item.Value);
       end if;
    end Write_Optional_Number;
-
-   ----------------------------------
-   -- Write_Optional_ResponseError --
-   ----------------------------------
-
-   not overriding procedure Write_Optional_ResponseError
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_ResponseError) is
-   begin
-      if V.Is_Set then
-         ResponseError'Write (S, V.Value);
-      end if;
-   end Write_Optional_ResponseError;
-
-   -----------------------------------------
-   -- Write_Optional_SignatureHelpOptions --
-   -----------------------------------------
-
-   not overriding procedure Write_Optional_SignatureHelpOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_SignatureHelpOptions) is
-   begin
-      if V.Is_Set then
-         SignatureHelpOptions'Write (S, V.Value);
-      end if;
-   end Write_Optional_SignatureHelpOptions;
 
    --------------------------------------------
    -- Write_Optional_TextDocumentSyncOptions --

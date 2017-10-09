@@ -3,6 +3,8 @@ with League.JSON.Values;
 with League.String_Vectors;
 with League.Strings;
 
+with LSP.Generic_Optional;
+
 package LSP.Types is
    pragma Preelaborate;
 
@@ -27,32 +29,15 @@ package LSP.Types is
 
    type Trace_Kinds is (Unspecified, Off, Messages, Verbose);
 
-   type Optional_Number (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : LSP_Number;
-         when False =>
-            null;
-      end case;
-   end record;
+   package Optional_Numbers is new LSP.Generic_Optional (LSP_Number);
+   type Optional_Number is new Optional_Numbers.Optional_Type;
 
-   type Optional_Boolean (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : Boolean;
-         when False =>
-            null;
-      end case;
-   end record;
+   package Optional_Booleans is new LSP.Generic_Optional (Boolean);
+   type Optional_Boolean is new Optional_Booleans.Optional_Type;
 
-   type Optional_String (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : LSP_String;
-         when False =>
-            null;
-      end case;
-   end record;
+   package Optional_Strings is new LSP.Generic_Optional (LSP_String);
+   type Optional_String is new Optional_Strings.Optional_Type;
+
 
    type MarkedString (Is_String : Boolean := True) is record
       value : LSP_String;

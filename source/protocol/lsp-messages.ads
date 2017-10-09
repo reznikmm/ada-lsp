@@ -5,6 +5,7 @@ with Ada.Streams;
 with League.IRIs;
 with League.Strings.Hash;
 
+with LSP.Generic_Optional;
 with LSP.Types; use LSP.Types;
 
 package LSP.Messages is
@@ -121,19 +122,8 @@ package LSP.Messages is
       V : ResponseError);
    for ResponseError'Write use Write_ResponseError;
 
-   type Optional_ResponseError (Is_Set    : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : ResponseError;
-         when False =>
-            null;
-      end case;
-   end record;
-
-   not overriding procedure Write_Optional_ResponseError
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_ResponseError);
-   for Optional_ResponseError'Write use Write_Optional_ResponseError;
+   package Optional_ResponseErrors is new LSP.Generic_Optional (ResponseError);
+   type Optional_ResponseError is new Optional_ResponseErrors.Optional_Type;
 
    type ResponseMessage is new Message with record
       id: LSP_Number_Or_String;  --  or null?
@@ -1099,50 +1089,65 @@ package LSP.Messages is
       triggerCharacters: LSP.Types.LSP_String_Vector;
    end record;
 
-   type Optional_CompletionOptions (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : CompletionOptions;
-         when False => null;
-      end case;
-   end record;
+   not overriding procedure Write_CompletionOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionOptions);
+   for CompletionOptions'Write use Write_CompletionOptions;
+
+   package Optional_CompletionOptionss is
+     new LSP.Generic_Optional (CompletionOptions);
+
+   type Optional_CompletionOptions is
+     new Optional_CompletionOptionss.Optional_Type;
 
    type SignatureHelpOptions is record
       triggerCharacters: LSP.Types.LSP_String_Vector;
    end record;
 
-   type Optional_SignatureHelpOptions (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : SignatureHelpOptions;
-         when False => null;
-      end case;
-   end record;
+   not overriding procedure Write_SignatureHelpOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelpOptions);
+
+   for SignatureHelpOptions'Write use Write_SignatureHelpOptions;
+
+   package Optional_SignatureHelpOptionss is
+     new LSP.Generic_Optional (SignatureHelpOptions);
+
+   type Optional_SignatureHelpOptions is
+     new Optional_SignatureHelpOptionss.Optional_Type;
 
    type CodeLensOptions is record
       resolveProvider: LSP.Types.Optional_Boolean;
    end record;
 
-   type Optional_CodeLensOptions (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : CodeLensOptions;
-         when False => null;
-      end case;
-   end record;
+   not overriding procedure Write_CodeLensOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CodeLensOptions);
+
+   for CodeLensOptions'Write use Write_CodeLensOptions;
+
+   package Optional_CodeLensOptionss is
+     new LSP.Generic_Optional (CodeLensOptions);
+
+   type Optional_CodeLensOptions is
+     new Optional_CodeLensOptionss.Optional_Type;
 
    type DocumentOnTypeFormattingOptions is record
       firstTriggerCharacter: LSP.Types.LSP_String;
       moreTriggerCharacter: LSP.Types.LSP_String_Vector;
    end record;
 
-   type Optional_DocumentOnTypeFormattingOptions (Is_Set : Boolean := False) is record
-      case Is_Set is
-         when True =>
-            Value : DocumentOnTypeFormattingOptions;
-         when False => null;
-      end case;
-   end record;
+   not overriding procedure Write_DocumentOnTypeFormattingOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentOnTypeFormattingOptions);
+
+   for DocumentOnTypeFormattingOptions'Write use Write_DocumentOnTypeFormattingOptions;
+
+   package Optional_DocumentOnTypeFormattingOptionss is
+     new LSP.Generic_Optional (DocumentOnTypeFormattingOptions);
+
+   type Optional_DocumentOnTypeFormattingOptions is
+     new Optional_DocumentOnTypeFormattingOptionss.Optional_Type;
 
    type DocumentLinkOptions is record
       resolveProvider: LSP.Types.Optional_Boolean;
@@ -2587,21 +2592,9 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
-   not overriding procedure Write_CodeLensOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : CodeLensOptions);
-
-   not overriding procedure Write_CompletionOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : CompletionOptions);
-
    not overriding procedure Write_DocumentLinkOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : DocumentLinkOptions);
-
-   not overriding procedure Write_DocumentOnTypeFormattingOptions   
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : DocumentOnTypeFormattingOptions);
 
    not overriding procedure Write_ExecuteCommandOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2615,22 +2608,6 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : InitializeResult);
 
-   not overriding procedure Write_Optional_CodeLensOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_CodeLensOptions);
-
-   not overriding procedure Write_Optional_CompletionOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_CompletionOptions);
-
-   not overriding procedure Write_Optional_DocumentOnTypeFormattingOptions   
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_DocumentOnTypeFormattingOptions);
-
-   not overriding procedure Write_Optional_SignatureHelpOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_SignatureHelpOptions);
-
    not overriding procedure Write_Optional_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Optional_TextDocumentSyncOptions);
@@ -2639,28 +2616,16 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ServerCapabilities);
 
-   not overriding procedure Write_SignatureHelpOptions
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : SignatureHelpOptions);
-
    not overriding procedure Write_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
-   for CodeLensOptions'Write use Write_CodeLensOptions;
-   for CompletionOptions'Write use Write_CompletionOptions;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
-   for DocumentOnTypeFormattingOptions'Write use Write_DocumentOnTypeFormattingOptions;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
-   for Optional_CodeLensOptions'Write use Write_Optional_CodeLensOptions;
-   for Optional_CompletionOptions'Write use Write_Optional_CompletionOptions;
-   for Optional_DocumentOnTypeFormattingOptions'Write use Write_Optional_DocumentOnTypeFormattingOptions;
-   for Optional_SignatureHelpOptions'Write use Write_Optional_SignatureHelpOptions;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
    for ServerCapabilities'Write use Write_ServerCapabilities;
-   for SignatureHelpOptions'Write use Write_SignatureHelpOptions;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
 
    for completion'Read use Read;
