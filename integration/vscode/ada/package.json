@@ -1,0 +1,64 @@
+{
+    "name": "ada",
+    "displayName": "Language Support for Ada",
+    "description": "A Language Server and Language Support for Ada for Visual Studio Code",
+    "version": "0.0.1",
+    "publisher": "reznikmm",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/reznikmm/ada-lsp"
+    },
+    "engines": {
+        "vscode": "^1.17.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+	"activationEvents": [
+		"onLanguage:ada"
+	],
+	"main": "./extension",
+    "contributes": {
+        "languages": [{
+            "id": "ada",
+            "aliases": ["Ada", "ada"],
+            "extensions": [".adb",".adc",".ads"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "ada",
+            "scopeName": "source.ada",
+            "path": "./syntaxes/ada.tmLanguage"
+        }],
+		"configuration": {
+			"type": "object",
+			"title": "Ada configuration",
+			"properties": {
+				"ada.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VSCode and the language server."
+				}
+			}
+		}
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^6.0.88",
+        "eslint": "^4.6.1",
+        "typescript": "^2.5.2"
+    },
+	"scripts": {
+		"postinstall": "node ./node_modules/vscode/bin/install"
+	},
+	"dependencies": {
+		"vscode": "^1.1.5",
+		"vscode-languageclient": "^3.4.2"
+	}
+}
