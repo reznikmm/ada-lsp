@@ -10,5 +10,9 @@ project LSP_Protocol is
       for Switches ("ada") use ("-g", "-gnatwa", "-gnatyy", "-gnatwe");
    end Compiler;
 
+   package Binder is
+      for Switches ("ada") use ("-E");
+   end Binder;
+
 end LSP_Protocol;
 

@@ -19,6 +19,11 @@ package body LSP.Servers is
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
 
+   function Do_Default
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
+
    function Do_Initialize
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
@@ -42,6 +47,27 @@ package body LSP.Servers is
    procedure Write_JSON_RPC
      (Stream : access Ada.Streams.Root_Stream_Type'Class;
       Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
+
+   ----------------
+   -- Do_Default --
+   ----------------
+
+   function Do_Default
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+       return LSP.Messages.ResponseMessage'Class
+   is
+      pragma Unreferenced (Stream, Handler);
+      Response : LSP.Messages.ResponseMessage;
+   begin
+      Response.error :=
+        (Is_Set => True,
+         Value  => (code    => LSP.Messages.MethodNotFound,
+                    message => +"No such method",
+                    others  => <>));
+
+      return Response;
+   end Do_Default;
 
    -------------------
    -- Do_Initialize --
@@ -75,6 +101,7 @@ package body LSP.Servers is
       Self.Stream := Stream;
       Self.Handler := Handler;
       Self.Dispatcher.Register (+"initialize", Do_Initialize'Access);
+      Self.Dispatcher.Register (+"", Do_Default'Access);
    end Initialize;
 
    ---------------------------------
@@ -124,7 +151,10 @@ package body LSP.Servers is
       Stream.Key (Key);
       Value := Stream.Read;
 
-      if Value.Is_String then
+      if Value.Is_Empty then
+         Item := (Is_Number => False,
+                  String    => League.Strings.Empty_Universal_String);
+      elsif Value.Is_String then
          Item := (Is_Number => False, String => Value.To_String);
       else
          Item := (Is_Number => True, Number => Integer (Value.To_Integer));

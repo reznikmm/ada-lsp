@@ -555,6 +555,31 @@ package body LSP.Messages is
       JS.End_Object;
    end Write_ResponseError;
 
+   ---------------------------
+   -- Write_ResponseMessage --
+   ---------------------------
+
+   not overriding procedure Write_ResponseMessage
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ResponseMessage)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"jsonrpc", V.jsonrpc);
+
+      if V.id.Is_Number then
+         Write_Number (JS, +"id", V.id.Number);
+      elsif not V.id.String.Is_Empty then
+         Write_String (JS, +"id", V.id.String);
+      end if;
+
+      JS.Key (+"error");
+      Optional_ResponseError'Write (S, V.error);
+      JS.End_Object;
+   end Write_ResponseMessage;
+
    ------------------------------
    -- Write_ServerCapabilities --
    ------------------------------

@@ -131,6 +131,12 @@ package LSP.Messages is
       error: Optional_ResponseError;
    end record;
 
+   not overriding procedure Write_ResponseMessage
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ResponseMessage);
+
+   for ResponseMessage'Write use Write_ResponseMessage;
+
    --```typescript
    --interface NotificationMessage extends Message {
    --	/**
