@@ -53,6 +53,11 @@ package body LSP.Messages is
      Key    : League.Strings.Universal_String;
      Item   : LSP.Types.LSP_String);
 
+   procedure Write_String_Vector
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_String_Vector);
+
    ----------
    -- Read --
    ----------
@@ -318,6 +323,89 @@ package body LSP.Messages is
       end if;
    end Read_Optional_String;
 
+   ---------------------------
+   -- Write_CodeLensOptions --
+   ---------------------------
+
+   not overriding procedure Write_CodeLensOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CodeLensOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Optional_Boolean (JS, +"resolveProvider", V.resolveProvider);
+      JS.End_Object;
+   end Write_CodeLensOptions;
+
+   -----------------------------
+   -- Write_CompletionOptions --
+   -----------------------------
+
+   not overriding procedure Write_CompletionOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Optional_Boolean (JS, +"resolveProvider", V.resolveProvider);
+      Write_String_Vector (JS, +"triggerCharacters", V.triggerCharacters);
+      JS.End_Object;
+   end Write_CompletionOptions;
+
+   -------------------------------
+   -- Write_DocumentLinkOptions --
+   -------------------------------
+
+   not overriding procedure Write_DocumentLinkOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentLinkOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Optional_Boolean (JS, +"resolveProvider", V.resolveProvider);
+      JS.End_Object;
+   end Write_DocumentLinkOptions;
+
+   -------------------------------------------
+   -- Write_DocumentOnTypeFormattingOptions --
+   -------------------------------------------
+
+   not overriding procedure Write_DocumentOnTypeFormattingOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentOnTypeFormattingOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"firstTriggerCharacter", V.firstTriggerCharacter);
+      Write_String_Vector
+        (JS, +"moreTriggerCharacter", V.moreTriggerCharacter);
+      JS.End_Object;
+   end Write_DocumentOnTypeFormattingOptions;
+
+   ---------------------------------
+   -- Write_ExecuteCommandOptions --
+   ---------------------------------
+
+   not overriding procedure Write_ExecuteCommandOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ExecuteCommandOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String_Vector (JS, +"commands", V.commands);
+      JS.End_Object;
+   end Write_ExecuteCommandOptions;
+
    -------------------------------
    -- Write_Initialize_Response --
    -------------------------------
@@ -392,6 +480,45 @@ package body LSP.Messages is
       end if;
    end Write_Optional_Boolean;
 
+   ------------------------------------
+   -- Write_Optional_CodeLensOptions --
+   ------------------------------------
+
+   not overriding procedure Write_Optional_CodeLensOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_CodeLensOptions) is
+   begin
+      if V.Is_Set then
+         CodeLensOptions'Write (S, V.Value);
+      end if;
+   end Write_Optional_CodeLensOptions;
+
+   --------------------------------------
+   -- Write_Optional_CompletionOptions --
+   --------------------------------------
+
+   not overriding procedure Write_Optional_CompletionOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_CompletionOptions) is
+   begin
+      if V.Is_Set then
+         CompletionOptions'Write (S, V.Value);
+      end if;
+   end Write_Optional_CompletionOptions;
+
+   ----------------------------------------------------
+   -- Write_Optional_DocumentOnTypeFormattingOptions --
+   ----------------------------------------------------
+
+   not overriding procedure Write_Optional_DocumentOnTypeFormattingOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_DocumentOnTypeFormattingOptions) is
+   begin
+      if V.Is_Set then
+         DocumentOnTypeFormattingOptions'Write (S, V.Value);
+      end if;
+   end Write_Optional_DocumentOnTypeFormattingOptions;
+
    ---------------------------
    -- Write_Optional_Number --
    ---------------------------
@@ -419,6 +546,19 @@ package body LSP.Messages is
          ResponseError'Write (S, V.Value);
       end if;
    end Write_Optional_ResponseError;
+
+   -----------------------------------------
+   -- Write_Optional_SignatureHelpOptions --
+   -----------------------------------------
+
+   not overriding procedure Write_Optional_SignatureHelpOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_SignatureHelpOptions) is
+   begin
+      if V.Is_Set then
+         SignatureHelpOptions'Write (S, V.Value);
+      end if;
+   end Write_Optional_SignatureHelpOptions;
 
    --------------------------------------------
    -- Write_Optional_TextDocumentSyncOptions --
@@ -495,6 +635,8 @@ package body LSP.Messages is
       JS.Key (+"textDocumentSync");
       Optional_TextDocumentSyncOptions'Write (S, V.textDocumentSync);
       Write_Optional_Boolean (JS, +"hoverProvider", V.hoverProvider);
+      Optional_CompletionOptions'Write (S, V.completionProvider);
+      Optional_SignatureHelpOptions'Write (S, V.signatureHelpProvider);
       Write_Optional_Boolean (JS, +"definitionProvider", V.definitionProvider);
       Write_Optional_Boolean (JS, +"referencesProvider", V.referencesProvider);
       Write_Optional_Boolean
@@ -510,9 +652,29 @@ package body LSP.Messages is
         (JS,
          +"documentRangeFormattingProvider",
          V.documentRangeFormattingProvider);
+      Optional_DocumentOnTypeFormattingOptions'Write
+        (S, V.documentOnTypeFormattingProvider);
       Write_Optional_Boolean (JS, +"renameProvider", V.renameProvider);
+      DocumentLinkOptions'Write (S, V.documentLinkProvider);
+      ExecuteCommandOptions'Write (S, V.executeCommandProvider);
       JS.End_Object;
    end Write_ServerCapabilities;
+
+   --------------------------------
+   -- Write_SignatureHelpOptions --
+   --------------------------------
+
+   not overriding procedure Write_SignatureHelpOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelpOptions)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String_Vector (JS, +"triggerCharacters", V.triggerCharacters);
+      JS.End_Object;
+   end Write_SignatureHelpOptions;
 
    ------------------
    -- Write_String --
@@ -526,6 +688,25 @@ package body LSP.Messages is
       Stream.Key (Key);
       Stream.Write (League.JSON.Values.To_JSON_Value (Item));
    end Write_String;
+
+   -------------------------
+   -- Write_String_Vector --
+   -------------------------
+
+   procedure Write_String_Vector
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : LSP.Types.LSP_String_Vector) is
+   begin
+      Stream.Key (Key);
+      Stream.Start_Array;
+
+      for J in 1 .. Item.Length loop
+         Stream.Write (League.JSON.Values.To_JSON_Value (Item.Element (J)));
+      end loop;
+
+      Stream.End_Array;
+   end Write_String_Vector;
 
    -----------------------------------
    -- Write_TextDocumentSyncOptions --

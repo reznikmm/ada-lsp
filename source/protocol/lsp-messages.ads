@@ -488,9 +488,9 @@ package LSP.Messages is
    --}
    --```
    type DocumentFilter is record
-      language: LSP_String;
-      scheme: LSP_String;
-      pattern: LSP_String;
+      language: LSP.Types.Optional_String;
+      scheme: LSP.Types.Optional_String;
+      pattern: LSP.Types.Optional_String;
    end record;
 
    package DocumentFilter_Vectors is new Ada.Containers.Vectors
@@ -1094,24 +1094,82 @@ package LSP.Messages is
          end case;
    end record;
 
+   type CompletionOptions is record
+      resolveProvider: LSP.Types.Optional_Boolean;
+      triggerCharacters: LSP.Types.LSP_String_Vector;
+   end record;
+
+   type Optional_CompletionOptions (Is_Set : Boolean := False) is record
+      case Is_Set is
+         when True =>
+            Value : CompletionOptions;
+         when False => null;
+      end case;
+   end record;
+
+   type SignatureHelpOptions is record
+      triggerCharacters: LSP.Types.LSP_String_Vector;
+   end record;
+
+   type Optional_SignatureHelpOptions (Is_Set : Boolean := False) is record
+      case Is_Set is
+         when True =>
+            Value : SignatureHelpOptions;
+         when False => null;
+      end case;
+   end record;
+
+   type CodeLensOptions is record
+      resolveProvider: LSP.Types.Optional_Boolean;
+   end record;
+
+   type Optional_CodeLensOptions (Is_Set : Boolean := False) is record
+      case Is_Set is
+         when True =>
+            Value : CodeLensOptions;
+         when False => null;
+      end case;
+   end record;
+
+   type DocumentOnTypeFormattingOptions is record
+      firstTriggerCharacter: LSP.Types.LSP_String;
+      moreTriggerCharacter: LSP.Types.LSP_String_Vector;
+   end record;
+
+   type Optional_DocumentOnTypeFormattingOptions (Is_Set : Boolean := False) is record
+      case Is_Set is
+         when True =>
+            Value : DocumentOnTypeFormattingOptions;
+         when False => null;
+      end case;
+   end record;
+
+   type DocumentLinkOptions is record
+      resolveProvider: LSP.Types.Optional_Boolean;
+   end record;
+
+   type ExecuteCommandOptions is record
+      commands: LSP.Types.LSP_String_Vector;
+   end record;
+
    type ServerCapabilities is record
       textDocumentSync: Optional_TextDocumentSyncOptions;
       hoverProvider: Optional_Boolean;
-   --	completionProvider?: CompletionOptions;
-   --	signatureHelpProvider?: SignatureHelpOptions;
+      completionProvider: Optional_CompletionOptions;
+      signatureHelpProvider: Optional_SignatureHelpOptions;
       definitionProvider: Optional_Boolean;
       referencesProvider: Optional_Boolean;
       documentHighlightProvider: Optional_Boolean;
       documentSymbolProvider: Optional_Boolean;
       workspaceSymbolProvider: Optional_Boolean;
       codeActionProvider: Optional_Boolean;
-   --	codeLensProvider?: CodeLensOptions;
+      codeLensProvider: Optional_CodeLensOptions;
       documentFormattingProvider: Optional_Boolean;
       documentRangeFormattingProvider: Optional_Boolean;
-   --	documentOnTypeFormattingProvider?: DocumentOnTypeFormattingOptions;
+      documentOnTypeFormattingProvider: Optional_DocumentOnTypeFormattingOptions;
       renameProvider: Optional_Boolean;
-   --	documentLinkProvider?: DocumentLinkOptions;
-   --	executeCommandProvider?: ExecuteCommandOptions;
+      documentLinkProvider: DocumentLinkOptions;
+      executeCommandProvider: ExecuteCommandOptions;
    --	experimental?: any;
    end record;
 
@@ -2529,6 +2587,26 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
+   not overriding procedure Write_CodeLensOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CodeLensOptions);
+
+   not overriding procedure Write_CompletionOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionOptions);
+
+   not overriding procedure Write_DocumentLinkOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentLinkOptions);
+
+   not overriding procedure Write_DocumentOnTypeFormattingOptions   
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentOnTypeFormattingOptions);
+
+   not overriding procedure Write_ExecuteCommandOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ExecuteCommandOptions);
+
    not overriding procedure Write_Initialize_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Initialize_Response);
@@ -2536,6 +2614,22 @@ private
    not overriding procedure Write_InitializeResult
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : InitializeResult);
+
+   not overriding procedure Write_Optional_CodeLensOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_CodeLensOptions);
+
+   not overriding procedure Write_Optional_CompletionOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_CompletionOptions);
+
+   not overriding procedure Write_Optional_DocumentOnTypeFormattingOptions   
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_DocumentOnTypeFormattingOptions);
+
+   not overriding procedure Write_Optional_SignatureHelpOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Optional_SignatureHelpOptions);
 
    not overriding procedure Write_Optional_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2545,14 +2639,28 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ServerCapabilities);
 
+   not overriding procedure Write_SignatureHelpOptions
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelpOptions);
+
    not overriding procedure Write_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
+   for CodeLensOptions'Write use Write_CodeLensOptions;
+   for CompletionOptions'Write use Write_CompletionOptions;
+   for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
+   for DocumentOnTypeFormattingOptions'Write use Write_DocumentOnTypeFormattingOptions;
+   for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
+   for Optional_CodeLensOptions'Write use Write_Optional_CodeLensOptions;
+   for Optional_CompletionOptions'Write use Write_Optional_CompletionOptions;
+   for Optional_DocumentOnTypeFormattingOptions'Write use Write_Optional_DocumentOnTypeFormattingOptions;
+   for Optional_SignatureHelpOptions'Write use Write_Optional_SignatureHelpOptions;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
    for ServerCapabilities'Write use Write_ServerCapabilities;
+   for SignatureHelpOptions'Write use Write_SignatureHelpOptions;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
 
    for completion'Read use Read;
