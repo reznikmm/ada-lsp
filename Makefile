@@ -4,3 +4,5 @@ all:
 clean:
 	rm -rf .obj
 
+vscode:
+	cd integration/vscode/ada; npm install
