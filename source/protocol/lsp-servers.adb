@@ -29,12 +29,11 @@ package body LSP.Servers is
      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
-   function Process_Request_From_Stream
+   procedure Process_Message_From_Stream
     (Self       : in out Server'Class;
      Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
      Handler    : LSP.Request_Handlers.Request_Handler_Access;
-     Stream     : access Ada.Streams.Root_Stream_Type'Class)
-      return LSP.Messages.ResponseMessage'Class;
+     Stream     : access Ada.Streams.Root_Stream_Type'Class);
 
    procedure Read_Number_Or_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -140,33 +139,54 @@ package body LSP.Servers is
    end Initialize;
 
    ---------------------------------
-   -- Process_Request_From_Stream --
+   -- Process_Message_From_Stream --
    ---------------------------------
 
-   function Process_Request_From_Stream
+   procedure Process_Message_From_Stream
     (Self       : in out Server'Class;
      Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
      Handler    : LSP.Request_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class)
-       return LSP.Messages.ResponseMessage'Class
    is
       use type League.Strings.Universal_String;
-      function Server_Not_Initialized return LSP.Messages.ResponseMessage;
+      procedure Send_Not_Initialized
+        (Request_Id : LSP.Types.LSP_Number_Or_String);
 
-      ----------------------------
-      -- Server_Not_Initialized --
-      ----------------------------
+      procedure Send_Response
+        (Response   : in out LSP.Messages.ResponseMessage'Class;
+         Request_Id : LSP.Types.LSP_Number_Or_String);
 
-      function Server_Not_Initialized return LSP.Messages.ResponseMessage is
+      procedure Send_Response
+        (Response   : in out LSP.Messages.ResponseMessage'Class;
+         Request_Id : LSP.Types.LSP_Number_Or_String)
+      is
+         Out_Stream : aliased League.JSON.Streams.JSON_Stream;
+         Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
       begin
-         return Response : LSP.Messages.ResponseMessage do
-            Response.error :=
-              (Is_Set => True,
-               Value  => (code    => LSP.Messages.MethodNotFound,
-                          message => +"No such method",
-                          others  => <>));
-         end return;
-      end Server_Not_Initialized;
+         Response.jsonrpc := +"2.0";
+         Response.id := Request_Id;
+         LSP.Messages.ResponseMessage'Class'Write
+           (Out_Stream'Access, Response);
+         Output := To_Element_Vector (Out_Stream);
+         Write_JSON_RPC (Self.Stream, Output);
+      end Send_Response;
+
+      --------------------------
+      -- Send_Not_Initialized --
+      --------------------------
+
+      procedure Send_Not_Initialized
+        (Request_Id : LSP.Types.LSP_Number_Or_String)
+      is
+         Response : LSP.Messages.ResponseMessage;
+      begin
+         Response.error :=
+           (Is_Set => True,
+            Value  => (code    => LSP.Messages.MethodNotFound,
+                       message => +"No such method",
+                       others  => <>));
+         Send_Response (Response, Request_Id);
+      end Send_Not_Initialized;
 
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (Stream.all);
@@ -184,22 +204,30 @@ package body LSP.Servers is
       if not Self.Initilized then
          if LSP.Types.Assigned (Request_Id) then
             if Method /= +"initialize" then
-               return Server_Not_Initialized;
+               Send_Not_Initialized (Request_Id);
             else
                Self.Initilized := True;
             end if;
          end if;
       end if;
 
-      return Result : LSP.Messages.ResponseMessage'Class := Dispatcher.Dispatch
-        (Method  => Method,
-         Stream  => Stream,
-         Handler => Handler)
-      do
-         Result.jsonrpc := +"2.0";
-         Result.id := Request_Id;
-      end return;
-   end Process_Request_From_Stream;
+      declare
+         Out_Stream : aliased League.JSON.Streams.JSON_Stream;
+         Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
+         Response   : LSP.Messages.ResponseMessage'Class :=
+           Dispatcher.Dispatch
+             (Method  => Method,
+              Stream  => Stream,
+              Handler => Handler);
+      begin
+         Response.jsonrpc := +"2.0";
+         Response.id := Request_Id;
+         LSP.Messages.ResponseMessage'Class'Write
+           (Out_Stream'Access, Response);
+         Output := To_Element_Vector (Out_Stream);
+         Write_JSON_RPC (Self.Stream, Output);
+      end;
+   end Process_Message_From_Stream;
 
    ---------------------------
    -- Read_Number_Or_String --
@@ -315,20 +343,10 @@ package body LSP.Servers is
          JSON_Array.Append (JSON_Object.To_JSON_Value);
          In_Stream.Set_JSON_Document (JSON_Array.To_JSON_Document);
 
-         declare
-            Out_Stream : aliased League.JSON.Streams.JSON_Stream;
-            Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
-            Response   : constant LSP.Messages.ResponseMessage'Class :=
-              Self.Process_Request_From_Stream
-                (Dispatcher => Self.Dispatcher'Access,
-                 Handler    => Self.Handler,
-                 Stream     => In_Stream'Access);
-         begin
-            LSP.Messages.ResponseMessage'Class'Write
-              (Out_Stream'Access, Response);
-            Output := To_Element_Vector (Out_Stream);
-            Write_JSON_RPC (Self.Stream, Output);
-         end;
+         Self.Process_Message_From_Stream
+           (Dispatcher => Self.Dispatcher'Access,
+            Handler    => Self.Handler,
+            Stream     => In_Stream'Access);
       end Parse_JSON;
 
       ----------------
