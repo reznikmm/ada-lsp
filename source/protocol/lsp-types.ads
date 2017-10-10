@@ -23,6 +23,9 @@ package LSP.Types is
       end case;
    end record;
 
+   function Assigned (Id : LSP_Number_Or_String) return Boolean;
+   --  Check if Id has an empty value
+
    type Line_Number is new Natural;
    type UTF_16_Index is new Natural;
    type Version_Id is new Natural;

@@ -24,6 +24,8 @@ package LSP.Servers is
 private
 
    type Server is tagged limited record
+      Initilized : Boolean;
+      --  Mark Server as uninitialized until get 'initalize' request
       Stream     : access Ada.Streams.Root_Stream_Type'Class;
       Dispatcher : aliased LSP.Request_Dispatchers.Request_Dispatcher;
       Handler    : LSP.Request_Handlers.Request_Handler_Access;

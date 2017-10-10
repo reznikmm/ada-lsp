@@ -30,7 +30,8 @@ package body LSP.Servers is
       return LSP.Messages.ResponseMessage'Class;
 
    function Process_Request_From_Stream
-    (Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
+    (Self       : in out Server'Class;
+     Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
      Handler    : LSP.Request_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class)
       return LSP.Messages.ResponseMessage'Class;
@@ -48,21 +49,25 @@ package body LSP.Servers is
      (Stream : access Ada.Streams.Root_Stream_Type'Class;
       Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
 
+   ------------------
+   -- Do_Not_Found --
+   ------------------
+
    function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class
    is
       pragma Unreferenced (Stream, Handler);
-      Response : LSP.Messages.ResponseMessage;
-   begin
-      Response.error :=
-        (Is_Set => True,
-         Value  => (code    => LSP.Messages.MethodNotFound,
-                    message => +"No such method",
-                    others  => <>));
 
-      return Response;
+   begin
+      return Response : LSP.Messages.ResponseMessage do
+         Response.error :=
+           (Is_Set => True,
+            Value  => (code    => LSP.Messages.MethodNotFound,
+                       message => +"No such method",
+                       others  => <>));
+      end return;
    end Do_Not_Found;
 
    -------------------
@@ -127,6 +132,7 @@ package body LSP.Servers is
    begin
       Self.Stream := Stream;
       Self.Handler := Handler;
+      Self.Initilized := False;  --  Block request until 'initialize' request
 
       for Request of Request_List loop
          Self.Dispatcher.Register (Request.Name, Request.Action);
@@ -138,11 +144,30 @@ package body LSP.Servers is
    ---------------------------------
 
    function Process_Request_From_Stream
-    (Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
+    (Self       : in out Server'Class;
+     Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
      Handler    : LSP.Request_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class)
        return LSP.Messages.ResponseMessage'Class
    is
+      use type League.Strings.Universal_String;
+      function Server_Not_Initialized return LSP.Messages.ResponseMessage;
+
+      ----------------------------
+      -- Server_Not_Initialized --
+      ----------------------------
+
+      function Server_Not_Initialized return LSP.Messages.ResponseMessage is
+      begin
+         return Response : LSP.Messages.ResponseMessage do
+            Response.error :=
+              (Is_Set => True,
+               Value  => (code    => LSP.Messages.MethodNotFound,
+                          message => +"No such method",
+                          others  => <>));
+         end return;
+      end Server_Not_Initialized;
+
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (Stream.all);
 
@@ -155,6 +180,16 @@ package body LSP.Servers is
       LSP.Types.Read_String (JS, +"method", Method);
       Read_Number_Or_String (JS, +"id", Request_Id);
       JS.Key (+"params");
+
+      if not Self.Initilized then
+         if LSP.Types.Assigned (Request_Id) then
+            if Method /= +"initialize" then
+               return Server_Not_Initialized;
+            else
+               Self.Initilized := True;
+            end if;
+         end if;
+      end if;
 
       return Result : LSP.Messages.ResponseMessage'Class := Dispatcher.Dispatch
         (Method  => Method,
@@ -284,7 +319,7 @@ package body LSP.Servers is
             Out_Stream : aliased League.JSON.Streams.JSON_Stream;
             Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
             Response   : constant LSP.Messages.ResponseMessage'Class :=
-              Process_Request_From_Stream
+              Self.Process_Request_From_Stream
                 (Dispatcher => Self.Dispatcher'Access,
                  Handler    => Self.Handler,
                  Stream     => In_Stream'Access);

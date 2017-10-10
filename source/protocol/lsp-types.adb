@@ -1,5 +1,14 @@
 package body LSP.Types is
 
+   --------------
+   -- Assigned --
+   --------------
+
+   function Assigned (Id : LSP_Number_Or_String) return Boolean is
+   begin
+      return not Id.Is_Number and then Id.String.Is_Empty;
+   end Assigned;
+
    -----------------
    -- Read_String --
    -----------------
