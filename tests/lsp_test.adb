@@ -1,11 +1,11 @@
 with LSP.Messages;
-with LSP.Request_Handlers;
+with LSP.Message_Handlers;
 with LSP.Servers;
 with LSP.Stdio_Streams;
 
 procedure LSP_Test is
-   type Message_Handler is new LSP.Request_Handlers.Request_Handler
-     and LSP.Request_Handlers.Notification_Handler
+   type Message_Handler is new LSP.Message_Handlers.Request_Handler
+     and LSP.Message_Handlers.Notification_Handler
        with null record;
 
    overriding procedure Initialize_Request

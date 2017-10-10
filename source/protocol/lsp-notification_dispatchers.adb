@@ -8,7 +8,7 @@ package body LSP.Notification_Dispatchers is
      (Self    : in out Notification_Dispatcher;
       Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Notification_Handler_Access)
+      Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
    is
       Cursor : Maps.Cursor := Self.Map.Find (Method);
    begin

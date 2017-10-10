@@ -5,7 +5,7 @@ with League.Strings;
 private with League.Strings.Hash;
 
 with LSP.Messages;
-with LSP.Request_Handlers;
+with LSP.Message_Handlers;
 with LSP.Types;
 
 package LSP.Request_Dispatchers is
@@ -15,7 +15,7 @@ package LSP.Request_Dispatchers is
 
    type Parameter_Handler_Access is access function
     (Stream     : access Ada.Streams.Root_Stream_Type'Class;
-     Handler    : not null LSP.Request_Handlers.Request_Handler_Access)
+     Handler    : not null LSP.Message_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class;
 
    not overriding procedure Register
@@ -27,7 +27,7 @@ package LSP.Request_Dispatchers is
      (Self    : in out Request_Dispatcher;
       Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
 private
@@ -41,7 +41,7 @@ private
 
    type Request_Dispatcher is tagged limited record
       Map   : Maps.Map;
-      Value : LSP.Request_Handlers.Request_Handler_Access;
+      Value : LSP.Message_Handlers.Request_Handler_Access;
    end record;
 
 end LSP.Request_Dispatchers;

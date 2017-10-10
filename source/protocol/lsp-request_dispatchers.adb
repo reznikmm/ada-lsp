@@ -8,7 +8,7 @@ package body LSP.Request_Dispatchers is
      (Self    : in out Request_Dispatcher;
       Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
         return LSP.Messages.ResponseMessage'Class
    is
       Cursor : Maps.Cursor := Self.Map.Find (Method);

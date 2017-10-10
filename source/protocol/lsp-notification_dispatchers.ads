@@ -4,7 +4,7 @@ with Ada.Streams;
 with League.Strings;
 private with League.Strings.Hash;
 
-with LSP.Request_Handlers;
+with LSP.Message_Handlers;
 with LSP.Types;
 
 package LSP.Notification_Dispatchers is
@@ -14,7 +14,7 @@ package LSP.Notification_Dispatchers is
 
    type Parameter_Handler_Access is access procedure
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Request_Handlers.Notification_Handler_Access);
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 
    not overriding procedure Register
     (Self   : in out Notification_Dispatcher;
@@ -25,7 +25,7 @@ package LSP.Notification_Dispatchers is
      (Self    : in out Notification_Dispatcher;
       Method  : LSP.Types.LSP_String;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Notification_Handler_Access);
+      Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 
 private
 
@@ -38,7 +38,7 @@ private
 
    type Notification_Dispatcher is tagged limited record
       Map   : Maps.Map;
-      Value : LSP.Request_Handlers.Notification_Handler_Access;
+      Value : LSP.Message_Handlers.Notification_Handler_Access;
    end record;
 
 end LSP.Notification_Dispatchers;

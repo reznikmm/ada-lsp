@@ -21,18 +21,18 @@ package body LSP.Servers is
 
    function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
    function Do_Initialize
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
    procedure Process_Message_From_Stream
     (Self       : in out Server'Class;
      Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
-     Handler    : LSP.Request_Handlers.Request_Handler_Access;
+     Handler    : LSP.Message_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class);
 
    procedure Read_Number_Or_String
@@ -54,7 +54,7 @@ package body LSP.Servers is
 
    function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class
    is
       pragma Unreferenced (Stream, Handler);
@@ -75,7 +75,7 @@ package body LSP.Servers is
 
    function Do_Initialize
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.InitializeParams;
@@ -96,7 +96,7 @@ package body LSP.Servers is
    not overriding procedure Initialize
      (Self    : in out Server;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
    is
       type Request is record
          Name   : League.Strings.Universal_String;
@@ -145,7 +145,7 @@ package body LSP.Servers is
    procedure Process_Message_From_Stream
     (Self       : in out Server'Class;
      Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
-     Handler    : LSP.Request_Handlers.Request_Handler_Access;
+     Handler    : LSP.Message_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class)
    is
       use type League.Strings.Universal_String;

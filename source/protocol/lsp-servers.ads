@@ -1,7 +1,7 @@
 with Ada.Streams;
 
 with LSP.Messages;
-with LSP.Request_Handlers;
+with LSP.Message_Handlers;
 
 private with LSP.Request_Dispatchers;
 
@@ -13,7 +13,7 @@ package LSP.Servers is
    not overriding procedure Initialize
      (Self    : in out Server;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access);
+      Handler : not null LSP.Message_Handlers.Request_Handler_Access);
 
    not overriding procedure Send_Notification
      (Self  : in out Server;
@@ -32,7 +32,7 @@ private
       --  Mark Server as uninitialized until get 'initalize' request
       Stream     : access Ada.Streams.Root_Stream_Type'Class;
       Dispatcher : aliased LSP.Request_Dispatchers.Request_Dispatcher;
-      Handler    : LSP.Request_Handlers.Request_Handler_Access;
+      Handler    : LSP.Message_Handlers.Request_Handler_Access;
    end record;
 
 end LSP.Servers;

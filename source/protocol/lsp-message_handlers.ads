@@ -1,6 +1,6 @@
 with LSP.Messages;
 
-package LSP.Request_Handlers is
+package LSP.Message_Handlers is
    pragma Preelaborate;
 
    type Request_Handler is limited interface;
@@ -17,4 +17,4 @@ package LSP.Request_Handlers is
    not overriding procedure Exit_Notification
     (Self : access Notification_Handler) is null;
 
-end LSP.Request_Handlers;
+end LSP.Message_Handlers;
