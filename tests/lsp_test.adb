@@ -4,16 +4,20 @@ with LSP.Servers;
 with LSP.Stdio_Streams;
 
 procedure LSP_Test is
-   type Request_Handler is new LSP.Request_Handlers.Request_Handler
-     with null record;
+   type Message_Handler is new LSP.Request_Handlers.Request_Handler
+     and LSP.Request_Handlers.Notification_Handler
+       with null record;
 
    overriding procedure Initialize_Request
-    (Self     : access Request_Handler;
+    (Self     : access Message_Handler;
      Value    : LSP.Messages.InitializeParams;
      Response : in out LSP.Messages.Initialize_Response);
 
+   overriding procedure Exit_Notification
+    (Self : access Message_Handler);
+
    overriding procedure Initialize_Request
-    (Self     : access Request_Handler;
+    (Self     : access Message_Handler;
      Value    : LSP.Messages.InitializeParams;
      Response : in out LSP.Messages.Initialize_Response)
    is
@@ -22,9 +26,18 @@ procedure LSP_Test is
       Response.result.capabilities.hoverProvider := (True, False);
    end Initialize_Request;
 
-   Handler : aliased Request_Handler;
-   Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
    Server  : LSP.Servers.Server;
+
+   overriding procedure Exit_Notification
+     (Self : access Message_Handler)
+   is
+      pragma Unreferenced (Self);
+   begin
+      Server.Stop;
+   end Exit_Notification;
+
+   Handler : aliased Message_Handler;
+   Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
 begin
    Server.Initialize (Stream'Unchecked_Access, Handler'Unchecked_Access);
    Server.Run;
