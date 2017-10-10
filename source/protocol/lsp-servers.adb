@@ -372,7 +372,7 @@ package body LSP.Servers is
       Buffer : Ada.Streams.Stream_Element_Array (1 .. 512);
       Last   : Ada.Streams.Stream_Element_Count;
    begin
-      loop
+      while not Self.Stop loop
          Parse_Header (Length, Vector);
          Last := Vector.Length;
          Buffer (1 .. Last) := Vector.To_Stream_Element_Array;
@@ -417,6 +417,15 @@ package body LSP.Servers is
       Element_Vector := To_Element_Vector (JSON_Stream);
       Write_JSON_RPC (Self.Stream, Element_Vector);
    end Send_Notification;
+
+   ----------
+   -- Stop --
+   ----------
+
+   not overriding procedure Stop (Self  : in out Server) is
+   begin
+      Self.Stop := True;
+   end Stop;
 
    -----------------------
    -- To_Element_Vector --
