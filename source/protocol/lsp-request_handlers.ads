@@ -11,4 +11,10 @@ package LSP.Request_Handlers is
      Value    : LSP.Messages.InitializeParams;
      Response : in out LSP.Messages.Initialize_Response) is null;
 
+   type Notification_Handler is limited interface;
+   type Notification_Handler_Access is access all Notification_Handler'Class;
+
+   not overriding procedure Exit_Notification
+    (Self : access Notification_Handler) is null;
+
 end LSP.Request_Handlers;
