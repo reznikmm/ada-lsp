@@ -19,7 +19,7 @@ package body LSP.Servers is
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
 
-   function Do_Default
+   function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
@@ -33,7 +33,7 @@ package body LSP.Servers is
     (Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
      Handler    : LSP.Request_Handlers.Request_Handler_Access;
      Stream     : access Ada.Streams.Root_Stream_Type'Class)
-       return LSP.Messages.ResponseMessage'Class;
+      return LSP.Messages.ResponseMessage'Class;
 
    procedure Read_Number_Or_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -48,11 +48,7 @@ package body LSP.Servers is
      (Stream : access Ada.Streams.Root_Stream_Type'Class;
       Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
 
-   ----------------
-   -- Do_Default --
-   ----------------
-
-   function Do_Default
+   function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
        return LSP.Messages.ResponseMessage'Class
@@ -67,7 +63,7 @@ package body LSP.Servers is
                     others  => <>));
 
       return Response;
-   end Do_Default;
+   end Do_Not_Found;
 
    -------------------
    -- Do_Initialize --
@@ -96,12 +92,45 @@ package body LSP.Servers is
    not overriding procedure Initialize
      (Self    : in out Server;
       Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Request_Handlers.Request_Handler_Access) is
+      Handler : not null LSP.Request_Handlers.Request_Handler_Access)
+   is
+      type Request is record
+         Name   : League.Strings.Universal_String;
+         Action : LSP.Request_Dispatchers.Parameter_Handler_Access;
+      end record;
+
+      Request_List : constant array (Positive range <>) of Request :=
+        ((+"initialize", Do_Initialize'Access),
+         (+"shutdown", Do_Not_Found'Access),
+         (+"textDocument/willSaveWaitUntil", Do_Not_Found'Access),
+         (+"textDocument/completion", Do_Not_Found'Access),
+         (+"completionItem/resolve", Do_Not_Found'Access),
+         (+"textDocument/hover", Do_Not_Found'Access),
+         (+"textDocument/signatureHelp", Do_Not_Found'Access),
+         (+"textDocument/definition", Do_Not_Found'Access),
+         (+"textDocument/references", Do_Not_Found'Access),
+         (+"textDocument/documentHighlight", Do_Not_Found'Access),
+         (+"textDocument/documentSymbol", Do_Not_Found'Access),
+         (+"workspace/symbol", Do_Not_Found'Access),
+         (+"textDocument/codeAction", Do_Not_Found'Access),
+         (+"textDocument/codeLens", Do_Not_Found'Access),
+         (+"codeLens/resolve", Do_Not_Found'Access),
+         (+"textDocument/documentLink", Do_Not_Found'Access),
+         (+"documentLink/resolve", Do_Not_Found'Access),
+         (+"textDocument/formatting", Do_Not_Found'Access),
+         (+"textDocument/rangeFormatting", Do_Not_Found'Access),
+         (+"textDocument/onTypeFormatting", Do_Not_Found'Access),
+         (+"textDocument/rename", Do_Not_Found'Access),
+         (+"workspace/executeCommand", Do_Not_Found'Access),
+         (+"", Do_Not_Found'Access));
+
    begin
       Self.Stream := Stream;
       Self.Handler := Handler;
-      Self.Dispatcher.Register (+"initialize", Do_Initialize'Access);
-      Self.Dispatcher.Register (+"", Do_Default'Access);
+
+      for Request of Request_List loop
+         Self.Dispatcher.Register (Request.Name, Request.Action);
+      end loop;
    end Initialize;
 
    ---------------------------------
