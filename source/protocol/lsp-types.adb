@@ -6,7 +6,7 @@ package body LSP.Types is
 
    function Assigned (Id : LSP_Number_Or_String) return Boolean is
    begin
-      return not Id.Is_Number and then Id.String.Is_Empty;
+      return Id.Is_Number or else not Id.String.Is_Empty;
    end Assigned;
 
    -----------------
