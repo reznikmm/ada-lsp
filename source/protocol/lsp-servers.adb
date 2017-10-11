@@ -30,10 +30,8 @@ package body LSP.Servers is
       return LSP.Messages.ResponseMessage'Class;
 
    procedure Process_Message_From_Stream
-    (Self       : in out Server'Class;
-     Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
-     Handler    : LSP.Message_Handlers.Request_Handler_Access;
-     Stream     : access Ada.Streams.Root_Stream_Type'Class);
+     (Self   : in out Server'Class;
+      Stream : access Ada.Streams.Root_Stream_Type'Class);
 
    procedure Read_Number_Or_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -47,6 +45,10 @@ package body LSP.Servers is
    procedure Write_JSON_RPC
      (Stream : access Ada.Streams.Root_Stream_Type'Class;
       Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
+
+   procedure Ignore_Notification
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 
    ------------------
    -- Do_Not_Found --
@@ -89,21 +91,34 @@ package body LSP.Servers is
       return Response;
    end Do_Initialize;
 
+   -------------------------
+   -- Ignore_Notification --
+   -------------------------
+
+   procedure Ignore_Notification
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access) is
+   begin
+      null;
+   end Ignore_Notification;
+
    ----------------
    -- Initialize --
    ----------------
 
    not overriding procedure Initialize
-     (Self    : in out Server;
-      Stream  : access Ada.Streams.Root_Stream_Type'Class;
-      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+     (Self         : in out Server;
+      Stream       : access Ada.Streams.Root_Stream_Type'Class;
+      Request      : not null LSP.Message_Handlers.Request_Handler_Access;
+      Notification : not null LSP.Message_Handlers.
+        Notification_Handler_Access)
    is
-      type Request is record
+      type Request_Info is record
          Name   : League.Strings.Universal_String;
          Action : LSP.Request_Dispatchers.Parameter_Handler_Access;
       end record;
 
-      Request_List : constant array (Positive range <>) of Request :=
+      Request_List : constant array (Positive range <>) of Request_Info :=
         ((+"initialize", Do_Initialize'Access),
          (+"shutdown", Do_Not_Found'Access),
          (+"textDocument/willSaveWaitUntil", Do_Not_Found'Access),
@@ -130,12 +145,15 @@ package body LSP.Servers is
 
    begin
       Self.Stream := Stream;
-      Self.Handler := Handler;
+      Self.Req_Handler := Request;
+      Self.Notif_Handler := Notification;
       Self.Initilized := False;  --  Block request until 'initialize' request
 
       for Request of Request_List loop
-         Self.Dispatcher.Register (Request.Name, Request.Action);
+         Self.Requests.Register (Request.Name, Request.Action);
       end loop;
+
+      Self.Notifications.Register (+"", Ignore_Notification'Access);
    end Initialize;
 
    ---------------------------------
@@ -143,10 +161,8 @@ package body LSP.Servers is
    ---------------------------------
 
    procedure Process_Message_From_Stream
-    (Self       : in out Server'Class;
-     Dispatcher : access LSP.Request_Dispatchers.Request_Dispatcher;
-     Handler    : LSP.Message_Handlers.Request_Handler_Access;
-     Stream     : access Ada.Streams.Root_Stream_Type'Class)
+     (Self   : in out Server'Class;
+      Stream : access Ada.Streams.Root_Stream_Type'Class)
    is
       use type League.Strings.Universal_String;
       procedure Send_Not_Initialized
@@ -201,24 +217,34 @@ package body LSP.Servers is
       Read_Number_Or_String (JS, +"id", Request_Id);
       JS.Key (+"params");
 
-      if not Self.Initilized then
-         if LSP.Types.Assigned (Request_Id) then
+      if LSP.Types.Assigned (Request_Id) then
+         if not Self.Initilized then
             if Method /= +"initialize" then
                Send_Not_Initialized (Request_Id);
+               return;
             else
                Self.Initilized := True;
             end if;
          end if;
+      else
+         if Self.Initilized then
+            Self.Notifications.Dispatch
+              (Method  => Method,
+               Stream  => Stream,
+               Handler => Self.Notif_Handler);
+         end if;
+
+         return;
       end if;
 
       declare
          Out_Stream : aliased League.JSON.Streams.JSON_Stream;
          Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
          Response   : LSP.Messages.ResponseMessage'Class :=
-           Dispatcher.Dispatch
+           Self.Requests.Dispatch
              (Method  => Method,
               Stream  => Stream,
-              Handler => Handler);
+              Handler => Self.Req_Handler);
       begin
          Response.jsonrpc := +"2.0";
          Response.id := Request_Id;
@@ -343,10 +369,7 @@ package body LSP.Servers is
          JSON_Array.Append (JSON_Object.To_JSON_Value);
          In_Stream.Set_JSON_Document (JSON_Array.To_JSON_Document);
 
-         Self.Process_Message_From_Stream
-           (Dispatcher => Self.Dispatcher'Access,
-            Handler    => Self.Handler,
-            Stream     => In_Stream'Access);
+         Self.Process_Message_From_Stream (In_Stream'Access);
       end Parse_JSON;
 
       ----------------
