@@ -613,7 +613,9 @@ package body LSP.Messages is
       JS.Key (+"textDocumentSync");
       Optional_TextDocumentSyncOptions'Write (S, V.textDocumentSync);
       Write_Optional_Boolean (JS, +"hoverProvider", V.hoverProvider);
+      JS.Key (+"completionProvider");
       Optional_CompletionOptions'Write (S, V.completionProvider);
+      JS.Key (+"signatureHelpProvider");
       Optional_SignatureHelpOptions'Write (S, V.signatureHelpProvider);
       Write_Optional_Boolean (JS, +"definitionProvider", V.definitionProvider);
       Write_Optional_Boolean (JS, +"referencesProvider", V.referencesProvider);
@@ -630,10 +632,13 @@ package body LSP.Messages is
         (JS,
          +"documentRangeFormattingProvider",
          V.documentRangeFormattingProvider);
+      JS.Key (+"documentOnTypeFormattingProvider");
       Optional_DocumentOnTypeFormattingOptions'Write
         (S, V.documentOnTypeFormattingProvider);
       Write_Optional_Boolean (JS, +"renameProvider", V.renameProvider);
+      JS.Key (+"documentLinkProvider");
       DocumentLinkOptions'Write (S, V.documentLinkProvider);
+      JS.Key (+"executeCommandProvider");
       ExecuteCommandOptions'Write (S, V.executeCommandProvider);
       JS.End_Object;
    end Write_ServerCapabilities;
