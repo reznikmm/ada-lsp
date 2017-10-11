@@ -47,6 +47,7 @@ package body LSP.Messages is
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
      Item   : LSP.Types.Optional_Number);
+   pragma Unreferenced (Write_Optional_Number);
 
    procedure Write_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -519,17 +520,12 @@ package body LSP.Messages is
 
    not overriding procedure Write_Optional_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Optional_TextDocumentSyncOptions)
-   is
-      JS : League.JSON.Streams.JSON_Stream'Class renames
-        League.JSON.Streams.JSON_Stream'Class (S.all);
+      V : Optional_TextDocumentSyncOptions) is
    begin
       if not V.Is_Set then
          return;
       elsif V.Is_Number then
-         JS.Write
-           (League.JSON.Values.To_JSON_Value
-              (League.Holders.Universal_Integer (V.Value)));
+         TextDocumentSyncKind'Write (S, V.Value);
       else
          TextDocumentSyncOptions'Write (S, V.Options);
       end if;
@@ -691,6 +687,24 @@ package body LSP.Messages is
       Stream.End_Array;
    end Write_String_Vector;
 
+   --------------------------------
+   -- Write_TextDocumentSyncKind --
+   --------------------------------
+
+   not overriding procedure Write_TextDocumentSyncKind
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextDocumentSyncKind)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+
+      Map : constant array (TextDocumentSyncKind) of
+        League.Holders.Universal_Integer :=
+          (None => 0, Full => 1, Incremental => 2);
+   begin
+      JS.Write (League.JSON.Values.To_JSON_Value (Map (V)));
+   end Write_TextDocumentSyncKind;
+
    -----------------------------------
    -- Write_TextDocumentSyncOptions --
    -----------------------------------
@@ -704,7 +718,8 @@ package body LSP.Messages is
    begin
       JS.Start_Object;
       Write_Optional_Boolean (JS, +"openClose", V.openClose);
-      Write_Optional_Number (JS, +"change", V.change);
+      JS.Key (+"change");
+      Optional_TextDocumentSyncKind'Write (S, V.change);
       Write_Optional_Boolean (JS, +"willSave", V.willSave);
       Write_Optional_Boolean (JS, +"willSaveWaitUntil", V.willSaveWaitUntil);
       Write_Optional_Boolean (JS, +"save", V.save);

@@ -1066,9 +1066,19 @@ package LSP.Messages is
    --	experimental?: any;
    --}
    --```
+   type TextDocumentSyncKind is (None, Full, Incremental);
+
+   not overriding procedure Write_TextDocumentSyncKind
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextDocumentSyncKind);
+   for TextDocumentSyncKind'Write use Write_TextDocumentSyncKind;
+   
+   package Optional_TextDocumentSyncKinds is new LSP.Generic_Optional (TextDocumentSyncKind);
+   type Optional_TextDocumentSyncKind is new Optional_TextDocumentSyncKinds.Optional_Type;
+
    type TextDocumentSyncOptions is record
       openClose: Optional_Boolean;
-      change: Optional_Number;
+      change: Optional_TextDocumentSyncKind;
       willSave: Optional_Boolean;
       willSaveWaitUntil: Optional_Boolean;
       save: Optional_Boolean;
@@ -1082,7 +1092,7 @@ package LSP.Messages is
             when True =>
                case Is_Number is
                   when True =>
-                     Value : LSP_Number;
+                     Value : TextDocumentSyncKind;
                   when False =>
                      Options : TextDocumentSyncOptions;
                end case;
@@ -1351,7 +1361,7 @@ package LSP.Messages is
    type TextDocumentChangeRegistrationOptions is
      new TextDocumentRegistrationOptions with
    record
-      syncKind: LSP_Number;
+      syncKind: TextDocumentSyncKind;
    end record;
 
    --```typescript
