@@ -50,6 +50,25 @@ package body LSP.Servers is
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 
+   procedure DidChangeConfiguration
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
+
+   ----------------------------
+   -- DidChangeConfiguration --
+   ----------------------------
+
+   procedure DidChangeConfiguration
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
+   is
+      Params : LSP.Messages.DidChangeConfigurationParams;
+   begin
+      LSP.Messages.DidChangeConfigurationParams'Read (Stream, Params);
+
+      Handler.Workspace_Did_Change_Configuration_Request (Params);
+   end DidChangeConfiguration;
+
    ------------------
    -- Do_Not_Found --
    ------------------
@@ -143,6 +162,18 @@ package body LSP.Servers is
          (+"workspace/executeCommand", Do_Not_Found'Access),
          (+"", Do_Not_Found'Access));
 
+      type Notification_Info is record
+         Name   : League.Strings.Universal_String;
+         Action : LSP.Notification_Dispatchers.Parameter_Handler_Access;
+      end record;
+
+      type Notification_Info_Array is
+        array (Positive range <>) of Notification_Info;
+
+      Notification_List : constant Notification_Info_Array :=
+        ((+"initialize", DidChangeConfiguration'Access),
+         (+"", Ignore_Notification'Access));
+
    begin
       Self.Stream := Stream;
       Self.Req_Handler := Request;
@@ -153,7 +184,9 @@ package body LSP.Servers is
          Self.Requests.Register (Request.Name, Request.Action);
       end loop;
 
-      Self.Notifications.Register (+"", Ignore_Notification'Access);
+      for Notification of Notification_List loop
+         Self.Notifications.Register (Notification.Name, Notification.Action);
+      end loop;
    end Initialize;
 
    ---------------------------------

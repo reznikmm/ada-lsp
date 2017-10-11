@@ -41,6 +41,8 @@ package LSP.Types is
    package Optional_Strings is new LSP.Generic_Optional (LSP_String);
    type Optional_String is new Optional_Strings.Optional_Type;
 
+   Optional_False : constant Optional_Boolean := (True, False);
+   Optional_True  : constant Optional_Boolean := (True, True);
 
    type MarkedString (Is_String : Boolean := True) is record
       value : LSP_String;

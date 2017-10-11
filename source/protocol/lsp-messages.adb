@@ -97,6 +97,24 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_ClientCapabilities;
 
+   ---------------------------------------
+   -- Read_DidChangeConfigurationParams --
+   ---------------------------------------
+
+   not overriding procedure Read_DidChangeConfigurationParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidChangeConfigurationParams)
+   is
+      use type League.Strings.Universal_String;
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"settings");
+      V.settings := JS.Read;
+      JS.End_Object;
+   end Read_DidChangeConfigurationParams;
+
    ------------------------------
    -- Read_dynamicRegistration --
    ------------------------------

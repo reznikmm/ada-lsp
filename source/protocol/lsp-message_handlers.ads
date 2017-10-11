@@ -14,6 +14,10 @@ package LSP.Message_Handlers is
    type Notification_Handler is limited interface;
    type Notification_Handler_Access is access all Notification_Handler'Class;
 
+   not overriding procedure Workspace_Did_Change_Configuration_Request
+    (Self     : access Notification_Handler;
+     Value    : LSP.Messages.DidChangeConfigurationParams) is null;
+
    not overriding procedure Exit_Notification
     (Self : access Notification_Handler) is null;
 

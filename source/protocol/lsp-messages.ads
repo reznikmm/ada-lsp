@@ -1559,8 +1559,7 @@ package LSP.Messages is
    --}
    --```
    type DidChangeConfigurationParams is record
-      --  settings: any; ???
-      null;
+      settings: LSP.Types.LSP_Any;
    end record;
 
    --```typescript
@@ -2578,6 +2577,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion);
 
+   not overriding procedure Read_DidChangeConfigurationParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidChangeConfigurationParams);
+
    not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
@@ -2636,6 +2639,7 @@ private
 
    for ClientCapabilities'Read use Read_ClientCapabilities;
    for completion'Read use Read_completion;
+   for DidChangeConfigurationParams'Read use Read_DidChangeConfigurationParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;
    for InitializeParams'Read use Read_InitializeParams;
    for synchronization'Read use Read_synchronization;
