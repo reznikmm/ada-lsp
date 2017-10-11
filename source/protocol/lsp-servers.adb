@@ -9,6 +9,7 @@ with League.Stream_Element_Vectors;
 with League.Strings;
 
 with LSP.Types;
+with LSP.Servers.Handlers;
 
 package body LSP.Servers is
 
@@ -18,16 +19,6 @@ package body LSP.Servers is
    function "+" (Text : Wide_Wide_String)
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
-
-   function Do_Not_Found
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
-      return LSP.Messages.ResponseMessage'Class;
-
-   function Do_Initialize
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
-      return LSP.Messages.ResponseMessage'Class;
 
    procedure Process_Message_From_Stream
      (Self   : in out Server'Class;
@@ -46,81 +37,6 @@ package body LSP.Servers is
      (Stream : access Ada.Streams.Root_Stream_Type'Class;
       Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
 
-   procedure Ignore_Notification
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
-
-   procedure DidChangeConfiguration
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
-
-   ----------------------------
-   -- DidChangeConfiguration --
-   ----------------------------
-
-   procedure DidChangeConfiguration
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
-   is
-      Params : LSP.Messages.DidChangeConfigurationParams;
-   begin
-      LSP.Messages.DidChangeConfigurationParams'Read (Stream, Params);
-
-      Handler.Workspace_Did_Change_Configuration_Request (Params);
-   end DidChangeConfiguration;
-
-   ------------------
-   -- Do_Not_Found --
-   ------------------
-
-   function Do_Not_Found
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
-       return LSP.Messages.ResponseMessage'Class
-   is
-      pragma Unreferenced (Stream, Handler);
-
-   begin
-      return Response : LSP.Messages.ResponseMessage do
-         Response.error :=
-           (Is_Set => True,
-            Value  => (code    => LSP.Messages.MethodNotFound,
-                       message => +"No such method",
-                       others  => <>));
-      end return;
-   end Do_Not_Found;
-
-   -------------------
-   -- Do_Initialize --
-   -------------------
-
-   function Do_Initialize
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
-       return LSP.Messages.ResponseMessage'Class
-   is
-      Params   : LSP.Messages.InitializeParams;
-      Response : LSP.Messages.Initialize_Response;
-   begin
-      LSP.Messages.InitializeParams'Read (Stream, Params);
-      Handler.Initialize_Request
-        (Response => Response,
-         Value    => Params);
-
-      return Response;
-   end Do_Initialize;
-
-   -------------------------
-   -- Ignore_Notification --
-   -------------------------
-
-   procedure Ignore_Notification
-    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Notification_Handler_Access) is
-   begin
-      null;
-   end Ignore_Notification;
-
    ----------------
    -- Initialize --
    ----------------
@@ -138,29 +54,29 @@ package body LSP.Servers is
       end record;
 
       Request_List : constant array (Positive range <>) of Request_Info :=
-        ((+"initialize", Do_Initialize'Access),
-         (+"shutdown", Do_Not_Found'Access),
-         (+"textDocument/willSaveWaitUntil", Do_Not_Found'Access),
-         (+"textDocument/completion", Do_Not_Found'Access),
-         (+"completionItem/resolve", Do_Not_Found'Access),
-         (+"textDocument/hover", Do_Not_Found'Access),
-         (+"textDocument/signatureHelp", Do_Not_Found'Access),
-         (+"textDocument/definition", Do_Not_Found'Access),
-         (+"textDocument/references", Do_Not_Found'Access),
-         (+"textDocument/documentHighlight", Do_Not_Found'Access),
-         (+"textDocument/documentSymbol", Do_Not_Found'Access),
-         (+"workspace/symbol", Do_Not_Found'Access),
-         (+"textDocument/codeAction", Do_Not_Found'Access),
-         (+"textDocument/codeLens", Do_Not_Found'Access),
-         (+"codeLens/resolve", Do_Not_Found'Access),
-         (+"textDocument/documentLink", Do_Not_Found'Access),
-         (+"documentLink/resolve", Do_Not_Found'Access),
-         (+"textDocument/formatting", Do_Not_Found'Access),
-         (+"textDocument/rangeFormatting", Do_Not_Found'Access),
-         (+"textDocument/onTypeFormatting", Do_Not_Found'Access),
-         (+"textDocument/rename", Do_Not_Found'Access),
-         (+"workspace/executeCommand", Do_Not_Found'Access),
-         (+"", Do_Not_Found'Access));
+        ((+"initialize", Handlers.Do_Initialize'Access),
+         (+"shutdown", Handlers.Do_Not_Found'Access),
+         (+"textDocument/willSaveWaitUntil", Handlers.Do_Not_Found'Access),
+         (+"textDocument/completion", Handlers.Do_Not_Found'Access),
+         (+"completionItem/resolve", Handlers.Do_Not_Found'Access),
+         (+"textDocument/hover", Handlers.Do_Not_Found'Access),
+         (+"textDocument/signatureHelp", Handlers.Do_Not_Found'Access),
+         (+"textDocument/definition", Handlers.Do_Not_Found'Access),
+         (+"textDocument/references", Handlers.Do_Not_Found'Access),
+         (+"textDocument/documentHighlight", Handlers.Do_Not_Found'Access),
+         (+"textDocument/documentSymbol", Handlers.Do_Not_Found'Access),
+         (+"workspace/symbol", Handlers.Do_Not_Found'Access),
+         (+"textDocument/codeAction", Handlers.Do_Not_Found'Access),
+         (+"textDocument/codeLens", Handlers.Do_Not_Found'Access),
+         (+"codeLens/resolve", Handlers.Do_Not_Found'Access),
+         (+"textDocument/documentLink", Handlers.Do_Not_Found'Access),
+         (+"documentLink/resolve", Handlers.Do_Not_Found'Access),
+         (+"textDocument/formatting", Handlers.Do_Not_Found'Access),
+         (+"textDocument/rangeFormatting", Handlers.Do_Not_Found'Access),
+         (+"textDocument/onTypeFormatting", Handlers.Do_Not_Found'Access),
+         (+"textDocument/rename", Handlers.Do_Not_Found'Access),
+         (+"workspace/executeCommand", Handlers.Do_Not_Found'Access),
+         (+"", Handlers.Do_Not_Found'Access));
 
       type Notification_Info is record
          Name   : League.Strings.Universal_String;
@@ -171,8 +87,8 @@ package body LSP.Servers is
         array (Positive range <>) of Notification_Info;
 
       Notification_List : constant Notification_Info_Array :=
-        ((+"initialize", DidChangeConfiguration'Access),
-         (+"", Ignore_Notification'Access));
+        ((+"initialize", Handlers.DidChangeConfiguration'Access),
+         (+"", Handlers.Ignore_Notification'Access));
 
    begin
       Self.Stream := Stream;
