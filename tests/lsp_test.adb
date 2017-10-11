@@ -39,6 +39,9 @@ procedure LSP_Test is
    Handler : aliased Message_Handler;
    Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
 begin
-   Server.Initialize (Stream'Unchecked_Access, Handler'Unchecked_Access);
+   Server.Initialize
+     (Stream'Unchecked_Access,
+      Handler'Unchecked_Access,
+      Handler'Unchecked_Access);
    Server.Run;
 end LSP_Test;

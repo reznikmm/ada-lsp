@@ -2570,31 +2570,31 @@ package LSP.Messages is
 
 private
 
-   not overriding procedure Read
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : out completion);
-
-   not overriding procedure Read
+   not overriding procedure Read_ClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out ClientCapabilities);
 
-   not overriding procedure Read
+   not overriding procedure Read_completion
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out completion);
+
+   not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
 
-   not overriding procedure Read
+   not overriding procedure Read_InitializeParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out InitializeParams);
 
-   not overriding procedure Read
+   not overriding procedure Read_synchronization
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization);
 
-   not overriding procedure Read
+   not overriding procedure Read_TextDocumentClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out TextDocumentClientCapabilities);
 
-   not overriding procedure Read
+   not overriding procedure Read_WorkspaceClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
@@ -2634,12 +2634,12 @@ private
    for ServerCapabilities'Write use Write_ServerCapabilities;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
 
-   for completion'Read use Read;
-   for ClientCapabilities'Read use Read;
-   for dynamicRegistration'Read use Read;
-   for InitializeParams'Read use Read;
-   for synchronization'Read use Read;
-   for TextDocumentClientCapabilities'Read use Read;
-   for WorkspaceClientCapabilities'Read use Read;
+   for ClientCapabilities'Read use Read_ClientCapabilities;
+   for completion'Read use Read_completion;
+   for dynamicRegistration'Read use Read_dynamicRegistration;
+   for InitializeParams'Read use Read_InitializeParams;
+   for synchronization'Read use Read_synchronization;
+   for TextDocumentClientCapabilities'Read use Read_TextDocumentClientCapabilities;
+   for WorkspaceClientCapabilities'Read use Read_WorkspaceClientCapabilities;
 
 end LSP.Messages;

@@ -62,7 +62,7 @@ package body LSP.Messages is
    -- Read --
    ----------
 
-   not overriding procedure Read
+   not overriding procedure Read_completion
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion)
    is
@@ -75,13 +75,13 @@ package body LSP.Messages is
         (JS, +"dynamicRegistration", V.dynamicRegistration);
       Read_Optional_Boolean (JS, +"snippetSupport", V.snippetSupport);
       JS.End_Object;
-   end Read;
+   end Read_completion;
 
-   ----------
-   -- Read --
-   ----------
+   -----------------------------
+   -- Read_ClientCapabilities --
+   -----------------------------
 
-   not overriding procedure Read
+   not overriding procedure Read_ClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out ClientCapabilities)
    is
@@ -95,13 +95,13 @@ package body LSP.Messages is
       JS.Key (+"textDocument");
       TextDocumentClientCapabilities'Read (S, V.textDocument);
       JS.End_Object;
-   end Read;
+   end Read_ClientCapabilities;
 
-   ----------
-   -- Read --
-   ----------
+   ------------------------------
+   -- Read_dynamicRegistration --
+   ------------------------------
 
-   not overriding procedure Read
+   not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration)
    is
@@ -113,13 +113,13 @@ package body LSP.Messages is
       Read_Optional_Boolean
         (JS, +"dynamicRegistration", Optional_Boolean (V));
       JS.End_Object;
-   end Read;
+   end Read_dynamicRegistration;
 
-   ----------
-   -- Read --
-   ----------
+   ---------------------------
+   -- Read_InitializeParams --
+   ---------------------------
 
-   procedure Read
+   procedure Read_InitializeParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out InitializeParams)
    is
@@ -147,13 +147,13 @@ package body LSP.Messages is
       end if;
 
       JS.End_Object;
-   end Read;
+   end Read_InitializeParams;
 
-   ----------
-   -- Read --
-   ----------
+   --------------------------
+   -- Read_synchronization --
+   --------------------------
 
-   not overriding procedure Read
+   not overriding procedure Read_synchronization
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization)
    is
@@ -167,13 +167,13 @@ package body LSP.Messages is
       Read_Optional_Boolean (JS, +"willSaveWaitUntil", V.willSaveWaitUntil);
       Read_Optional_Boolean (JS, +"didSave", V.didSave);
       JS.End_Object;
-   end Read;
+   end Read_synchronization;
 
-   ----------
-   -- Read --
-   ----------
+   -----------------------------------------
+   -- Read_TextDocumentClientCapabilities --
+   -----------------------------------------
 
-   not overriding procedure Read
+   not overriding procedure Read_TextDocumentClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out TextDocumentClientCapabilities)
    is
@@ -212,13 +212,13 @@ package body LSP.Messages is
       JS.Key (+"rename");
       dynamicRegistration'Read (S, V.rename);
       JS.End_Object;
-   end Read;
+   end Read_TextDocumentClientCapabilities;
 
-   ----------
-   -- Read --
-   ----------
+   --------------------------------------
+   -- Read_WorkspaceClientCapabilities --
+   --------------------------------------
 
-   not overriding procedure Read
+   not overriding procedure Read_WorkspaceClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities)
    is
@@ -237,7 +237,7 @@ package body LSP.Messages is
       JS.Key (+"executeCommand");
       dynamicRegistration'Read (S, V.executeCommand);
       JS.End_Object;
-   end Read;
+   end Read_WorkspaceClientCapabilities;
 
    --------------
    -- Read_IRI --
