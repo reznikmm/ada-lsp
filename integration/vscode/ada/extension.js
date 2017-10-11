@@ -16,8 +16,8 @@ function activate(context) {
     };
     // Options to control the language client
     let clientOptions = {
-        // Register the server for plain text documents
-        documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+        // Register the server for ada sources documents
+        documentSelector: [{ scheme: 'file', language: 'ada' }],
         synchronize: {
             // Synchronize the setting section 'ada' to the server
             configurationSection: 'ada',
