@@ -1,6 +1,10 @@
 private package LSP.Servers.Handlers is
    pragma Preelaborate;
 
+   procedure DidChangeConfiguration
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
+
    function Do_Not_Found
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
@@ -11,11 +15,12 @@ private package LSP.Servers.Handlers is
      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
-   procedure Ignore_Notification
+   function Do_Shutdown
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
 
-   procedure DidChangeConfiguration
+   procedure Ignore_Notification
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 

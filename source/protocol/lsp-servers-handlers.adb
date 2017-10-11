@@ -62,6 +62,23 @@ package body LSP.Servers.Handlers is
       return Response;
    end Do_Initialize;
 
+   -----------------
+   -- Do_Shutdown --
+   -----------------
+
+   function Do_Shutdown
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      pragma Unreferenced (Stream);
+      Response : LSP.Messages.ResponseMessage;
+   begin
+      Handler.Shutdown_Request (Response);
+
+      return Response;
+   end Do_Shutdown;
+
    -------------------------
    -- Ignore_Notification --
    -------------------------

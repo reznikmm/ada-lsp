@@ -55,7 +55,7 @@ package body LSP.Servers is
 
       Request_List : constant array (Positive range <>) of Request_Info :=
         ((+"initialize", Handlers.Do_Initialize'Access),
-         (+"shutdown", Handlers.Do_Not_Found'Access),
+         (+"shutdown", Handlers.Do_Shutdown'Access),
          (+"textDocument/willSaveWaitUntil", Handlers.Do_Not_Found'Access),
          (+"textDocument/completion", Handlers.Do_Not_Found'Access),
          (+"completionItem/resolve", Handlers.Do_Not_Found'Access),

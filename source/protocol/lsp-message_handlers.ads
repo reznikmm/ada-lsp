@@ -11,6 +11,10 @@ package LSP.Message_Handlers is
      Value    : LSP.Messages.InitializeParams;
      Response : in out LSP.Messages.Initialize_Response) is null;
 
+   not overriding procedure Shutdown_Request
+    (Self     : access Request_Handler;
+     Response : in out LSP.Messages.ResponseMessage) is null;
+
    type Notification_Handler is limited interface;
    type Notification_Handler_Access is access all Notification_Handler'Class;
 
