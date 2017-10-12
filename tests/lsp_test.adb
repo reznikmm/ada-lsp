@@ -20,6 +20,10 @@ procedure LSP_Test is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidOpenTextDocumentParams);
 
+   ------------------------
+   -- Initialize_Request --
+   ------------------------
+
    overriding procedure Initialize_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.InitializeParams;
@@ -27,8 +31,13 @@ procedure LSP_Test is
    is
       pragma Unreferenced (Self, Value);
    begin
-      Response.result.capabilities.hoverProvider := (True, False);
+      Response.result.capabilities.textDocumentSync :=
+        (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
    end Initialize_Request;
+
+   ----------------------------
+   -- Text_Document_Did_Open --
+   ----------------------------
 
    overriding procedure Text_Document_Did_Open
      (Self  : access Message_Handler;
@@ -38,6 +47,10 @@ procedure LSP_Test is
    end Text_Document_Did_Open;
 
    Server  : LSP.Servers.Server;
+
+   -----------------------
+   -- Exit_Notification --
+   -----------------------
 
    overriding procedure Exit_Notification
      (Self : access Message_Handler)

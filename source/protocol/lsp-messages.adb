@@ -316,7 +316,8 @@ package body LSP.Messages is
       if Value.Is_Null then
          Item.Clear;
       else
-         Item := League.IRIs.From_Universal_String (Stream.Read.To_String);
+         --  Item := League.IRIs.From_Universal_String (Stream.Read.To_String);
+         Item := Stream.Read.To_String;
       end if;
    end Read_IRI;
 

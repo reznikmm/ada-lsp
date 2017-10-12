@@ -2,7 +2,6 @@ with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
 with Ada.Streams;
 
-with League.IRIs;
 with League.Strings.Hash;
 
 with LSP.Generic_Optional;
@@ -170,7 +169,7 @@ package LSP.Messages is
    --```typescript
    --type DocumentUri = string;
    --```
-   subtype DocumentUri is League.IRIs.IRI;
+   subtype DocumentUri is LSP.Types.LSP_String;
 
    --```typescript
    --export const EOL: string[] = ['\n', '\r\n', '\r'];
