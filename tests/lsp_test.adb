@@ -1,12 +1,26 @@
+with League.Strings.Hash;
+
 with LSP.Messages;
 with LSP.Message_Handlers;
 with LSP.Servers;
 with LSP.Stdio_Streams;
 
+with LSP_Documents;
+with Ada.Containers.Hashed_Maps;
+
 procedure LSP_Test is
+
+   package Document_Maps is new Ada.Containers.Hashed_Maps
+     (Key_Type        => LSP.Messages.DocumentUri,
+      Element_Type    => LSP_Documents.Document,
+      Hash            => League.Strings.Hash,
+      Equivalent_Keys => League.Strings."=",
+      "="             => LSP_Documents."=");
+
    type Message_Handler is new LSP.Message_Handlers.Request_Handler
-     and LSP.Message_Handlers.Notification_Handler
-       with null record;
+     and LSP.Message_Handlers.Notification_Handler with record
+      Documents : Document_Maps.Map;
+   end record;
 
    overriding procedure Initialize_Request
     (Self     : access Message_Handler;
@@ -41,9 +55,12 @@ procedure LSP_Test is
 
    overriding procedure Text_Document_Did_Open
      (Self  : access Message_Handler;
-      Value : LSP.Messages.DidOpenTextDocumentParams) is
+      Value : LSP.Messages.DidOpenTextDocumentParams)
+   is
+      Document : LSP_Documents.Document;
    begin
-      null;
+      Document.Initalize (Value.textDocument.text);
+      Self.Documents.Include (Value.textDocument.uri, Document);
    end Text_Document_Did_Open;
 
    Server  : LSP.Servers.Server;
