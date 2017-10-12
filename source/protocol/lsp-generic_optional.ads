@@ -2,7 +2,7 @@ with Ada.Streams;
 generic
    type Element_Type is private;
 package LSP.Generic_Optional is
-   pragma Pure;
+   pragma Preelaborate;
 
    type Optional_Type (Is_Set : Boolean := False) is record
       case Is_Set is
@@ -12,6 +12,12 @@ package LSP.Generic_Optional is
             null;
       end case;
    end record;
+
+   not overriding procedure Read
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Optional_Type);
+
+   for Optional_Type'Read use Read;
 
    not overriding procedure Write
      (S : access Ada.Streams.Root_Stream_Type'Class;
