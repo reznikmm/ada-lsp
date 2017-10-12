@@ -4,9 +4,13 @@ package LSP_Documents is
 
    type Document is tagged private;
 
-   procedure Initalize
+   not overriding procedure Initalize
      (Self : out Document;
       Text : LSP.Types.LSP_String);
+
+   not overriding function Get_Line
+     (Self : Document;
+      Line : LSP.Types.Line_Number) return LSP.Types.LSP_String;
 
 private
 

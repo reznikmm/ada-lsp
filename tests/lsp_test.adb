@@ -11,6 +11,10 @@ with Ada.Containers.Hashed_Maps;
 
 procedure LSP_Test is
 
+   function "+" (Text : Wide_Wide_String)
+      return League.Strings.Universal_String renames
+       League.Strings.To_Universal_String;
+
    package Document_Maps is new Ada.Containers.Hashed_Maps
      (Key_Type        => LSP.Messages.DocumentUri,
       Element_Type    => LSP_Documents.Document,
@@ -43,6 +47,11 @@ procedure LSP_Test is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidCloseTextDocumentParams);
 
+   overriding procedure Text_Document_Completion_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Completion_Response);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -53,14 +62,43 @@ procedure LSP_Test is
      Response : in out LSP.Messages.Initialize_Response)
    is
       pragma Unreferenced (Self, Value);
+
+      Completion_Characters : LSP.Types.LSP_String_Vector;
    begin
+      Completion_Characters.Append (+"'");
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
       Response.result.capabilities.completionProvider :=
         (Is_Set => True, Value =>
            (resolveProvider   => LSP.Types.Optional_False,
-            triggerCharacters => <>));
+            triggerCharacters => Completion_Characters));
    end Initialize_Request;
+
+   --------------------------------------
+   -- Text_Document_Completion_Request --
+   --------------------------------------
+
+   overriding procedure Text_Document_Completion_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Completion_Response)
+   is
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+      Line     : constant LSP.Types.LSP_String := Document.Get_Line
+        (Value.position.line);
+      Character : constant Wide_Wide_Character := Line.Element
+        (Natural (Value.position.character) + 1).To_Wide_Wide_Character;
+   begin
+      if Character = ''' then
+         declare
+            Item : LSP.Messages.CompletionItem;
+         begin
+            Item.label := +"Range";
+            Response.result.items.Append (Item);
+         end;
+      end if;
+   end Text_Document_Completion_Request;
 
    ------------------------------
    -- Text_Document_Did_Change --
