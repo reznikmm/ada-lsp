@@ -34,6 +34,10 @@ procedure LSP_Test is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidOpenTextDocumentParams);
 
+   overriding procedure Text_Document_Did_Close
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidCloseTextDocumentParams);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -48,6 +52,17 @@ procedure LSP_Test is
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
    end Initialize_Request;
+
+   -----------------------------
+   -- Text_Document_Did_Close --
+   -----------------------------
+
+   overriding procedure Text_Document_Did_Close
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidCloseTextDocumentParams) is
+   begin
+      Self.Documents.Delete (Value.textDocument.uri);
+   end Text_Document_Did_Close;
 
    ----------------------------
    -- Text_Document_Did_Open --

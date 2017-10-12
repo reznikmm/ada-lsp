@@ -347,6 +347,11 @@ package LSP.Messages is
       uri: DocumentUri;
    end record;
 
+   not overriding procedure Read_TextDocumentIdentifier
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentIdentifier);
+   for TextDocumentIdentifier'Read use Read_TextDocumentIdentifier;
+
    --+N+2
    --```typescript
    --interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
@@ -2590,6 +2595,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidChangeConfigurationParams);
 
+   not overriding procedure Read_DidCloseTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidCloseTextDocumentParams);
+
    not overriding procedure Read_DidOpenTextDocumentParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidOpenTextDocumentParams);
@@ -2646,7 +2655,6 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
-   for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
@@ -2659,6 +2667,8 @@ private
    for ClientCapabilities'Read use Read_ClientCapabilities;
    for completion'Read use Read_completion;
    for DidChangeConfigurationParams'Read use Read_DidChangeConfigurationParams;
+   for DidCloseTextDocumentParams'Read use Read_DidCloseTextDocumentParams;
+   for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;
    for InitializeParams'Read use Read_InitializeParams;
    for synchronization'Read use Read_synchronization;

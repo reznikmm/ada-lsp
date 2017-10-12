@@ -21,6 +21,21 @@ package body LSP.Servers.Handlers is
       Handler.Workspace_Did_Change_Configuration_Request (Params);
    end DidChangeConfiguration;
 
+   --------------------------
+   -- DidCloseTextDocument --
+   --------------------------
+
+   procedure DidCloseTextDocument
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
+   is
+      Params : LSP.Messages.DidCloseTextDocumentParams;
+   begin
+      LSP.Messages.DidCloseTextDocumentParams'Read (Stream, Params);
+
+      Handler.Text_Document_Did_Close (Params);
+   end DidCloseTextDocument;
+
    -------------------------
    -- DidOpenTextDocument --
    -------------------------

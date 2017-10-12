@@ -121,6 +121,23 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_DidChangeConfigurationParams;
 
+   -------------------------------------
+   -- Read_DidCloseTextDocumentParams --
+   -------------------------------------
+
+   not overriding procedure Read_DidCloseTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidCloseTextDocumentParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentIdentifier'Read (S, V.textDocument);
+      JS.End_Object;
+   end Read_DidCloseTextDocumentParams;
+
    ------------------------------------
    -- Read_DidOpenTextDocumentParams --
    ------------------------------------
@@ -137,6 +154,23 @@ package body LSP.Messages is
       TextDocumentItem'Read (S, V.textDocument);
       JS.End_Object;
    end Read_DidOpenTextDocumentParams;
+
+   ---------------------------------
+   -- Read_TextDocumentIdentifier --
+   ---------------------------------
+
+   not overriding procedure Read_TextDocumentIdentifier
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentIdentifier)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"uri");
+      DocumentUri'Read (S, V.uri);
+      JS.End_Object;
+   end Read_TextDocumentIdentifier;
 
    ---------------------------
    -- Read_TextDocumentItem --
