@@ -130,6 +130,26 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_DidChangeConfigurationParams;
 
+   --------------------------------------
+   -- Read_DidChangeTextDocumentParams --
+   --------------------------------------
+
+   not overriding procedure Read_DidChangeTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidChangeTextDocumentParams)
+   is
+      use type League.Strings.Universal_String;
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      VersionedTextDocumentIdentifier'Read (S, V.textDocument);
+      JS.Key (+"contentChanges");
+      TextDocumentContentChangeEvent_Vector'Read (S, V.contentChanges);
+      JS.End_Object;
+   end Read_DidChangeTextDocumentParams;
+
    -------------------------------------
    -- Read_DidCloseTextDocumentParams --
    -------------------------------------
@@ -336,6 +356,62 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_TextDocumentClientCapabilities;
 
+   -----------------------------------------
+   -- Read_TextDocumentContentChangeEvent --
+   -----------------------------------------
+
+   not overriding procedure Read_TextDocumentContentChangeEvent
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentContentChangeEvent)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"span");
+      Optional_Span'Read (S, V.span);
+      Read_Optional_Number (JS, +"rangeLength", V.rangeLength);
+      Read_String (JS, +"text", V.text);
+      JS.End_Object;
+   end Read_TextDocumentContentChangeEvent;
+
+   ------------------------------------------------
+   -- Read_TextDocumentContentChangeEvent_Vector --
+   ------------------------------------------------
+
+   not overriding procedure Read_TextDocumentContentChangeEvent_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentContentChangeEvent_Vector)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+      Item : TextDocumentContentChangeEvent;
+   begin
+      V.Clear;
+      JS.Start_Array;
+      TextDocumentContentChangeEvent'Read (S, Item);
+      V.Append (Item);
+      JS.End_Array;
+   end Read_TextDocumentContentChangeEvent_Vector;
+
+   ------------------------------------------
+   -- Read_VersionedTextDocumentIdentifier --
+   ------------------------------------------
+
+   not overriding procedure Read_VersionedTextDocumentIdentifier
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out VersionedTextDocumentIdentifier)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"uri");
+      DocumentUri'Read (S, V.uri);
+      Read_Number (JS, +"version", LSP_Number (V.version));
+      JS.End_Object;
+   end Read_VersionedTextDocumentIdentifier;
+
    --------------------------------------
    -- Read_WorkspaceClientCapabilities --
    --------------------------------------
@@ -475,6 +551,25 @@ package body LSP.Messages is
       Read_Number (JS, +"character", LSP_Number (V.character));
       JS.End_Object;
    end Read_Position;
+
+   ---------------
+   -- Read_Span --
+   ---------------
+
+   not overriding procedure Read_Span
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Span)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"start");
+      Position'Read (S, V.first);
+      JS.Key (+"end");
+      Position'Read (S, V.last);
+      JS.End_Object;
+   end Read_Span;
 
    ---------------------------
    -- Write_CodeLensOptions --

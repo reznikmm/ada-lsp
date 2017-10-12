@@ -223,10 +223,18 @@ package LSP.Messages is
       last: Position;  --  end: is reserved work
    end record;
 
+   not overriding procedure Read_Span
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Span);
+   for Span'Read use Read_Span;
+
    not overriding procedure Write_Span
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Span);
    for Span'Write use Write_Span;
+
+   package Optional_Spans is new LSP.Generic_Optional (Span);
+   type Optional_Span is new Optional_Spans.Optional_Type;
 
    --```typescript
    --interface Location {
@@ -389,6 +397,12 @@ package LSP.Messages is
    type VersionedTextDocumentIdentifier is new TextDocumentIdentifier with record
       version: Version_Id;
    end record;
+
+   not overriding procedure Read_VersionedTextDocumentIdentifier
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out VersionedTextDocumentIdentifier);
+   for VersionedTextDocumentIdentifier'Read use
+     Read_VersionedTextDocumentIdentifier;
 
    --```typescript
    --export interface TextDocumentEdit {
@@ -1657,17 +1671,32 @@ package LSP.Messages is
    --}
    --```
    type TextDocumentContentChangeEvent is record
-      span: LSP.Messages.Span;  --  optional???
-      rangeLength: LSP_Number;
+      span: Optional_Span;
+      rangeLength: LSP.Types.Optional_Number;
       text: LSP_String;
    end record;
+
+   not overriding procedure Read_TextDocumentContentChangeEvent
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentContentChangeEvent);
+   for TextDocumentContentChangeEvent'Read use
+     Read_TextDocumentContentChangeEvent;
 
    package TextDocumentContentChangeEvent_Vectors is new Ada.Containers.Vectors
      (Positive, TextDocumentContentChangeEvent);
 
+   type TextDocumentContentChangeEvent_Vector is
+     new TextDocumentContentChangeEvent_Vectors.Vector with null record;
+
+   not overriding procedure Read_TextDocumentContentChangeEvent_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentContentChangeEvent_Vector);
+   for TextDocumentContentChangeEvent_Vector'Read use
+     Read_TextDocumentContentChangeEvent_Vector;
+
    type DidChangeTextDocumentParams is record
       textDocument: VersionedTextDocumentIdentifier;
-      contentChanges: TextDocumentContentChangeEvent_Vectors.Vector;
+      contentChanges: TextDocumentContentChangeEvent_Vector;
    end record;
 
    --```typescript
@@ -2651,6 +2680,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidChangeConfigurationParams);
 
+   not overriding procedure Read_DidChangeTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidChangeTextDocumentParams);
+
    not overriding procedure Read_DidCloseTextDocumentParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidCloseTextDocumentParams);
@@ -2733,6 +2766,7 @@ private
    for ClientCapabilities'Read use Read_ClientCapabilities;
    for completion'Read use Read_completion;
    for DidChangeConfigurationParams'Read use Read_DidChangeConfigurationParams;
+   for DidChangeTextDocumentParams'Read use Read_DidChangeTextDocumentParams;
    for DidCloseTextDocumentParams'Read use Read_DidCloseTextDocumentParams;
    for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;

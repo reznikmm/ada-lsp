@@ -88,6 +88,7 @@ package body LSP.Servers is
 
       Notification_List : constant Notification_Info_Array :=
         ((+"exit", Handlers.Do_Exit'Access),
+         (+"textDocument/didChange", Handlers.DidChangeTextDocument'Access),
          (+"textDocument/didClose", Handlers.DidCloseTextDocument'Access),
          (+"textDocument/didOpen", Handlers.DidOpenTextDocument'Access),
          (+"workspace/didChangeConfiguration",

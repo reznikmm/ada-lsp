@@ -35,6 +35,10 @@ procedure LSP_Test is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidOpenTextDocumentParams);
 
+   overriding procedure Text_Document_Did_Change
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidChangeTextDocumentParams);
+
    overriding procedure Text_Document_Did_Close
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidCloseTextDocumentParams);
@@ -58,7 +62,21 @@ procedure LSP_Test is
             triggerCharacters => <>));
    end Initialize_Request;
 
-   -----------------------------
+   ------------------------------
+   -- Text_Document_Did_Change --
+   ------------------------------
+
+   overriding procedure Text_Document_Did_Change
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidChangeTextDocumentParams)
+   is
+      Document : LSP_Documents.Document;
+   begin
+      Document.Initalize (Value.contentChanges.Last_Element.text);
+      Self.Documents.Replace (Value.textDocument.uri, Document);
+   end Text_Document_Did_Change;
+
+-----------------------------
    -- Text_Document_Did_Close --
    -----------------------------
 
