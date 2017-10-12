@@ -85,12 +85,13 @@ procedure LSP_Test is
    is
       Document : LSP_Documents.Document renames
         Self.Documents (Value.textDocument.uri);
+      Position : constant Natural := Natural (Value.position.character);
       Line     : constant LSP.Types.LSP_String := Document.Get_Line
         (Value.position.line);
-      Character : constant Wide_Wide_Character := Line.Element
-        (Natural (Value.position.character) + 1).To_Wide_Wide_Character;
    begin
-      if Character = ''' then
+      if Position in 1 .. Line.Length
+        and then Line (Position).To_Wide_Wide_Character = '''
+      then
          declare
             Item : LSP.Messages.CompletionItem;
          begin
