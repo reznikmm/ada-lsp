@@ -87,9 +87,10 @@ package body LSP.Servers is
         array (Positive range <>) of Notification_Info;
 
       Notification_List : constant Notification_Info_Array :=
-        ((+"workspace/didChangeConfiguration",
-          Handlers.DidChangeConfiguration'Access),
+        ((+"exit", Handlers.Do_Exit'Access),
          (+"textDocument/didOpen", Handlers.DidOpenTextDocument'Access),
+         (+"workspace/didChangeConfiguration",
+          Handlers.DidChangeConfiguration'Access),
          (+"", Handlers.Ignore_Notification'Access));
 
    begin

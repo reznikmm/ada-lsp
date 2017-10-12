@@ -36,26 +36,18 @@ package body LSP.Servers.Handlers is
       Handler.Text_Document_Did_Open (Params);
    end DidOpenTextDocument;
 
-   ------------------
-   -- Do_Not_Found --
-   ------------------
+   -------------
+   -- Do_Exit --
+   -------------
 
-   function Do_Not_Found
+   procedure Do_Exit
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
-     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
-       return LSP.Messages.ResponseMessage'Class
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
    is
-      pragma Unreferenced (Stream, Handler);
-
+      pragma Unreferenced (Stream);
    begin
-      return Response : LSP.Messages.ResponseMessage do
-         Response.error :=
-           (Is_Set => True,
-            Value  => (code    => LSP.Messages.MethodNotFound,
-                       message => +"No such method",
-                       others  => <>));
-      end return;
-   end Do_Not_Found;
+      Handler.Exit_Notification;
+   end Do_Exit;
 
    -------------------
    -- Do_Initialize --
@@ -76,6 +68,27 @@ package body LSP.Servers.Handlers is
 
       return Response;
    end Do_Initialize;
+
+   ------------------
+   -- Do_Not_Found --
+   ------------------
+
+   function Do_Not_Found
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+       return LSP.Messages.ResponseMessage'Class
+   is
+      pragma Unreferenced (Stream, Handler);
+
+   begin
+      return Response : LSP.Messages.ResponseMessage do
+         Response.error :=
+           (Is_Set => True,
+            Value  => (code    => LSP.Messages.MethodNotFound,
+                       message => +"No such method",
+                       others  => <>));
+      end return;
+   end Do_Not_Found;
 
    -----------------
    -- Do_Shutdown --
