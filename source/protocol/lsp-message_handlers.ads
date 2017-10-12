@@ -22,6 +22,10 @@ package LSP.Message_Handlers is
     (Self     : access Notification_Handler;
      Value    : LSP.Messages.DidChangeConfigurationParams) is null;
 
+   not overriding procedure Text_Document_Did_Open
+     (Self  : access Notification_Handler;
+      Value : LSP.Messages.DidOpenTextDocumentParams) is null;
+
    not overriding procedure Exit_Notification
     (Self : access Notification_Handler) is null;
 

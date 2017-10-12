@@ -33,6 +33,11 @@ package body LSP.Messages is
      Key    : League.Strings.Universal_String;
      Item   : out LSP.Types.LSP_String) renames LSP.Types.Read_String;
 
+   procedure Read_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number);
+
    procedure Write_Number
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
@@ -115,6 +120,42 @@ package body LSP.Messages is
       V.settings := JS.Read;
       JS.End_Object;
    end Read_DidChangeConfigurationParams;
+
+   ------------------------------------
+   -- Read_DidOpenTextDocumentParams --
+   ------------------------------------
+
+   not overriding procedure Read_DidOpenTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidOpenTextDocumentParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentItem'Read (S, V.textDocument);
+      JS.End_Object;
+   end Read_DidOpenTextDocumentParams;
+
+   ---------------------------
+   -- Read_TextDocumentItem --
+   ---------------------------
+
+   not overriding procedure Read_TextDocumentItem
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentItem)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Read_IRI (JS, +"uri", V.uri);
+      Read_String (JS, +"languageId", V.languageId);
+      Read_Number (JS, +"version", LSP.Types.LSP_Number (V.version));
+      Read_String (JS, +"text", V.text);
+      JS.End_Object;
+   end Read_TextDocumentItem;
 
    ------------------------------
    -- Read_dynamicRegistration --
@@ -278,6 +319,19 @@ package body LSP.Messages is
          Item := League.IRIs.From_Universal_String (Stream.Read.To_String);
       end if;
    end Read_IRI;
+
+   -----------------
+   -- Read_Number --
+   -----------------
+
+   procedure Read_Number
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number) is
+   begin
+      Stream.Key (Key);
+      Item := LSP.Types.LSP_Number (Stream.Read.To_Integer);
+   end Read_Number;
 
    ---------------------------
    -- Read_Optional_Boolean --

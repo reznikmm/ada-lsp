@@ -1072,7 +1072,7 @@ package LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncKind);
    for TextDocumentSyncKind'Write use Write_TextDocumentSyncKind;
-   
+
    package Optional_TextDocumentSyncKinds is new LSP.Generic_Optional (TextDocumentSyncKind);
    type Optional_TextDocumentSyncKind is new Optional_TextDocumentSyncKinds.Optional_Type;
 
@@ -2591,6 +2591,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidChangeConfigurationParams);
 
+   not overriding procedure Read_DidOpenTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidOpenTextDocumentParams);
+
    not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
@@ -2606,6 +2610,10 @@ private
    not overriding procedure Read_TextDocumentClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out TextDocumentClientCapabilities);
+
+   not overriding procedure Read_TextDocumentItem
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentItem);
 
    not overriding procedure Read_WorkspaceClientCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2639,12 +2647,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
+   for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
    for ServerCapabilities'Write use Write_ServerCapabilities;
+   for TextDocumentItem'Read use Read_TextDocumentItem;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
 
    for ClientCapabilities'Read use Read_ClientCapabilities;

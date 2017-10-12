@@ -21,6 +21,21 @@ package body LSP.Servers.Handlers is
       Handler.Workspace_Did_Change_Configuration_Request (Params);
    end DidChangeConfiguration;
 
+   -------------------------
+   -- DidOpenTextDocument --
+   -------------------------
+
+   procedure DidOpenTextDocument
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Notification_Handler_Access)
+   is
+      Params : LSP.Messages.DidOpenTextDocumentParams;
+   begin
+      LSP.Messages.DidOpenTextDocumentParams'Read (Stream, Params);
+
+      Handler.Text_Document_Did_Open (Params);
+   end DidOpenTextDocument;
+
    ------------------
    -- Do_Not_Found --
    ------------------

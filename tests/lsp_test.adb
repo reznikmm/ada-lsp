@@ -16,6 +16,10 @@ procedure LSP_Test is
    overriding procedure Exit_Notification
     (Self : access Message_Handler);
 
+   overriding procedure Text_Document_Did_Open
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidOpenTextDocumentParams);
+
    overriding procedure Initialize_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.InitializeParams;
@@ -25,6 +29,13 @@ procedure LSP_Test is
    begin
       Response.result.capabilities.hoverProvider := (True, False);
    end Initialize_Request;
+
+   overriding procedure Text_Document_Did_Open
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidOpenTextDocumentParams) is
+   begin
+      null;
+   end Text_Document_Did_Open;
 
    Server  : LSP.Servers.Server;
 
