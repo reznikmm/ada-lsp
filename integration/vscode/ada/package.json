@@ -20,34 +20,59 @@
     ],
     "main": "./extension",
     "contributes": {
-        "languages": [{
-            "id": "ada",
-            "aliases": ["Ada", "ada"],
-            "extensions": [".adb",".adc",".ads"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "ada",
-            "scopeName": "source.ada",
-            "path": "./syntaxes/ada.tmLanguage"
-        }],
-        "configuration": {
-            "type": "object",
-            "title": "Ada configuration",
-            "properties": {
-                "ada.trace.server": {
-                    "scope": "window",
-                    "type": "string",
-                    "enum": [
-                        "off",
-                        "messages",
-                        "verbose"
-                    ],
-                    "default": "off",
-                    "description": "Traces the communication between VSCode and the language server."
+        "languages": [
+            {
+                "id": "ada",
+                "aliases": [
+                    "Ada",
+                    "ada"
+                ],
+                "extensions": [
+                    ".adb",
+                    ".adc",
+                    ".ads"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "ada",
+                "scopeName": "source.ada",
+                "path": "./syntaxes/ada.tmLanguage"
+            }
+        ],
+        "configuration": [
+            {
+                "type": "object",
+                "title": "Ada configuration",
+                "properties": {
+                    "ada.trace.server": {
+                        "scope": "window",
+                        "type": "string",
+                        "enum": [
+                            "off",
+                            "messages",
+                            "verbose"
+                        ],
+                        "default": "off",
+                        "description": "Traces the communication between VSCode and the language server."
+                    }
+                }
+            },
+            {
+                "type": "object",
+                "title": "Project file",
+                "properties": {
+                    "ada.project_file": {
+                        "scope": "resource",
+                        "type": "string",
+                        "default": "",
+                        "description": "Project file (*.gpr) for given workspace."
+                    }
                 }
             }
-        }
+        ]
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",
