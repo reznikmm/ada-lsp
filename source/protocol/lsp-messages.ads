@@ -195,6 +195,16 @@ package LSP.Messages is
       character: UTF_16_Index;
    end record;
 
+   not overriding procedure Read_Position
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Position);
+   for Position'Read use Read_Position;
+
+   not overriding procedure Write_Position
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Position);
+   for Position'Write use Write_Position;
+
    --```typescript
    --interface Range {
    --	/**
@@ -209,9 +219,14 @@ package LSP.Messages is
    --}
    --```
    type Span is record
-      start: Position;
+      first: Position;
       last: Position;  --  end: is reserved work
    end record;
+
+   not overriding procedure Write_Span
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Span);
+   for Span'Write use Write_Span;
 
    --```typescript
    --interface Location {
@@ -312,6 +327,11 @@ package LSP.Messages is
       --  arguments?: any[];  ???
    end record;
 
+   not overriding procedure Write_Command
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Command);
+   for Command'Write use Write_Command;
+
    --```typescript
    --interface TextEdit {
    --	/**
@@ -331,6 +351,11 @@ package LSP.Messages is
       span: LSP.Messages.Span;
       newText: LSP_String;
    end record;
+
+   not overriding procedure Write_TextEdit
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextEdit);
+   for TextEdit'Write use Write_TextEdit;
 
    package TextEdit_Vectors is new Ada.Containers.Vectors (Positive, TextEdit);
 
@@ -462,6 +487,11 @@ package LSP.Messages is
       textDocument: TextDocumentIdentifier;
       position: LSP.Messages.Position;
    end record;
+
+   not overriding procedure Read_TextDocumentPositionParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentPositionParams);
+   for TextDocumentPositionParams'Read use Read_TextDocumentPositionParams;
 
    --```typescript
    --{ language: 'typescript', scheme: 'file' }
@@ -1927,7 +1957,16 @@ package LSP.Messages is
    --	export const Reference = 18;
    --}
    --```
-   type InsertTextFormat is (Undefined, PlainText, Snippet);
+   type InsertTextFormat is (PlainText, Snippet);
+
+   not overriding procedure Write_InsertTextFormat
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : InsertTextFormat);
+   for InsertTextFormat'Write use Write_InsertTextFormat;
+
+   package Optional_InsertTextFormats is new LSP.Generic_Optional (InsertTextFormat);
+   type Optional_InsertTextFormat is new Optional_InsertTextFormats.Optional_Type;
+
    type CompletionItemKind is (
       Text,
       Method,
@@ -1948,15 +1987,23 @@ package LSP.Messages is
       File,
       Reference);
 
+   not overriding procedure Write_CompletionItemKind
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionItemKind);
+   for CompletionItemKind'Write use Write_CompletionItemKind;
+
+   package Optional_CompletionItemKinds is new LSP.Generic_Optional (CompletionItemKind);
+   type Optional_CompletionItemKind is new Optional_CompletionItemKinds.Optional_Type;
+
    type CompletionItem is record
       label: LSP_String;
-      kind: Optional_Number;   -- ???
+      kind: Optional_CompletionItemKind;
       detail: Optional_String;
       documentation: Optional_String;
       sortText: Optional_String;
       filterText: Optional_String;
       insertText: Optional_String;
-      insertTextFormat: LSP.Messages.InsertTextFormat;
+      insertTextFormat: Optional_InsertTextFormat;
       textEdit: LSP.Messages.TextEdit;
       additionalTextEdits: TextEdit_Vectors.Vector;
       commitCharacters: LSP_String_Vector;
@@ -1964,12 +2011,21 @@ package LSP.Messages is
    --	data?: any
    end record;
 
+   not overriding procedure Write_CompletionItem
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionItem);
+   for CompletionItem'Write use Write_CompletionItem;
+
    package CompletionItem_Vectors is new Ada.Containers.Vectors
      (Positive, CompletionItem);
 
    type CompletionList is record
       isIncomplete: Boolean;
       items: CompletionItem_Vectors.Vector;
+   end record;
+
+   type Completion_Response is new ResponseMessage with record
+      result: CompletionList;
    end record;
 
    --```typescript
@@ -2627,6 +2683,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
+   not overriding procedure Write_Completion_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Completion_Response);
+
+   not overriding procedure Write_CompletionList
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CompletionList);
+
    not overriding procedure Write_DocumentLinkOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : DocumentLinkOptions);
@@ -2655,6 +2719,8 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
+   for Completion_Response'Write use Write_Completion_Response;
+   for CompletionList'Write use Write_CompletionList;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;

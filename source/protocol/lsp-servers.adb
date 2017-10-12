@@ -57,7 +57,7 @@ package body LSP.Servers is
         ((+"initialize", Handlers.Do_Initialize'Access),
          (+"shutdown", Handlers.Do_Shutdown'Access),
          (+"textDocument/willSaveWaitUntil", Handlers.Do_Not_Found'Access),
-         (+"textDocument/completion", Handlers.Do_Not_Found'Access),
+         (+"textDocument/completion", Handlers.Do_Completion'Access),
          (+"completionItem/resolve", Handlers.Do_Not_Found'Access),
          (+"textDocument/hover", Handlers.Do_Not_Found'Access),
          (+"textDocument/signatureHelp", Handlers.Do_Not_Found'Access),

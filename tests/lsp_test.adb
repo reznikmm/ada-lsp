@@ -4,6 +4,7 @@ with LSP.Messages;
 with LSP.Message_Handlers;
 with LSP.Servers;
 with LSP.Stdio_Streams;
+with LSP.Types;
 
 with LSP_Documents;
 with Ada.Containers.Hashed_Maps;
@@ -51,6 +52,10 @@ procedure LSP_Test is
    begin
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
+      Response.result.capabilities.completionProvider :=
+        (Is_Set => True, Value =>
+           (resolveProvider   => LSP.Types.Optional_False,
+            triggerCharacters => <>));
    end Initialize_Request;
 
    -----------------------------

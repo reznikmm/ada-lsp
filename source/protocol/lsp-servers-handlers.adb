@@ -51,6 +51,26 @@ package body LSP.Servers.Handlers is
       Handler.Text_Document_Did_Open (Params);
    end DidOpenTextDocument;
 
+   -------------------
+   -- Do_Completion --
+   -------------------
+
+   function Do_Completion
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.TextDocumentPositionParams;
+      Response : LSP.Messages.Completion_Response;
+   begin
+      LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
+      Handler.Text_Document_Completion_Request
+        (Response => Response,
+         Value    => Params);
+
+      return Response;
+   end Do_Completion;
+
    -------------
    -- Do_Exit --
    -------------
