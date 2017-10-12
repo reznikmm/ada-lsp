@@ -365,6 +365,9 @@ package LSP.Messages is
       V : TextEdit);
    for TextEdit'Write use Write_TextEdit;
 
+   package Optional_TextEdits is new LSP.Generic_Optional (TextEdit);
+   type Optional_TextEdit is new Optional_TextEdits.Optional_Type;
+
    package TextEdit_Vectors is new Ada.Containers.Vectors (Positive, TextEdit);
 
    --+N
@@ -2033,7 +2036,7 @@ package LSP.Messages is
       filterText: Optional_String;
       insertText: Optional_String;
       insertTextFormat: Optional_InsertTextFormat;
-      textEdit: LSP.Messages.TextEdit;
+      textEdit: Optional_TextEdit;
       additionalTextEdits: TextEdit_Vectors.Vector;
       commitCharacters: LSP_String_Vector;
       command: LSP.Messages.Command;  --  Optional ???

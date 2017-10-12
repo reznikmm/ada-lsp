@@ -649,7 +649,7 @@ package body LSP.Messages is
       JS.Key (+"insertTextFormat");
       Optional_InsertTextFormat'Write (S, V.insertTextFormat);
       JS.Key (+"textEdit");
-      TextEdit'Write (S, V.textEdit);
+      Optional_TextEdit'Write (S, V.textEdit);
 
       if not V.additionalTextEdits.Is_Empty then
          JS.Key (+"additionalTextEdits");
