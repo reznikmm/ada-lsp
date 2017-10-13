@@ -386,11 +386,12 @@ package body LSP.Servers is
 
    not overriding procedure Send_Notification
      (Self  : in out Server;
-      Value : LSP.Messages.NotificationMessage)
+      Value : in out LSP.Messages.NotificationMessage'Class)
    is
       JSON_Stream    : aliased League.JSON.Streams.JSON_Stream;
       Element_Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
    begin
+      Value.jsonrpc := +"2.0";
       LSP.Messages.NotificationMessage'Write (JSON_Stream'Access, Value);
       Element_Vector := To_Element_Vector (JSON_Stream);
       Write_JSON_RPC (Self.Stream, Element_Vector);

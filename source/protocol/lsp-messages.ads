@@ -151,7 +151,7 @@ package LSP.Messages is
    --```
    type NotificationMessage is new Message with record
       method: LSP_String;
-      params: LSP_Any;
+--      params: LSP_Any;
    end record;
 
    --```typescript
@@ -268,8 +268,15 @@ package LSP.Messages is
    --	export const Hint = 4;
    --}
    --```
-   type DiagnosticSeverity is
-     (None, Error, Warning, Information, Hint);
+   type DiagnosticSeverity is (Error, Warning, Information, Hint);
+
+   not overriding procedure Write_DiagnosticSeverity
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DiagnosticSeverity);
+   for DiagnosticSeverity'Write use Write_DiagnosticSeverity;
+
+   package Optional_DiagnosticSeveritys is new LSP.Generic_Optional (DiagnosticSeverity);
+   type Optional_DiagnosticSeverity is new Optional_DiagnosticSeveritys.Optional_Type;
 
    --```typescript
    --interface Diagnostic {
@@ -303,14 +310,21 @@ package LSP.Messages is
    --```
    type Diagnostic is record
       span: LSP.Messages.Span;
-      severity: DiagnosticSeverity;
+      severity: Optional_DiagnosticSeverity;
       code: LSP_Number_Or_String;
-      source: LSP_String;
+      source: Optional_String;
       message: LSP_String;
    end record;
 
+   not overriding procedure Write_Diagnostic
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Diagnostic);
+   for Diagnostic'Write use Write_Diagnostic;
+
    package Diagnostic_Vectors is new Ada.Containers.Vectors
      (Positive, Diagnostic);
+
+   type Diagnostic_Vector is new Diagnostic_Vectors.Vector with null record;
 
    --```typescript
    --interface Command {
@@ -1846,7 +1860,7 @@ package LSP.Messages is
    --```
    type PublishDiagnosticsParams is record
       uri: DocumentUri;
-      diagnostics: Diagnostic_Vectors.Vector;
+      diagnostics: Diagnostic_Vector;
    end record;
 
    --```typescript
@@ -2417,7 +2431,7 @@ package LSP.Messages is
    --}
    --```
    type CodeActionContext is record
-      diagnostics: Diagnostic_Vectors.Vector;
+      diagnostics: Diagnostic_Vector;
    end record;
 
    type CodeActionParams is record
@@ -2669,6 +2683,10 @@ package LSP.Messages is
       applied: Boolean;
    end record;
 
+   type PublishDiagnostics_Notification is new NotificationMessage with record
+      params : PublishDiagnosticsParams;
+   end record;
+
 private
 
    not overriding procedure Read_ClientCapabilities
@@ -2678,6 +2696,10 @@ private
    not overriding procedure Read_completion
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion);
+
+   not overriding procedure Write_Diagnostic_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Diagnostic_Vector);
 
    not overriding procedure Read_DidChangeConfigurationParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2751,6 +2773,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Optional_TextDocumentSyncOptions);
 
+   not overriding procedure Write_PublishDiagnostics_Notification
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : PublishDiagnostics_Notification);
+
+   not overriding procedure Write_PublishDiagnosticsParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : PublishDiagnosticsParams);
+
    not overriding procedure Write_ServerCapabilities
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ServerCapabilities);
@@ -2761,11 +2791,14 @@ private
 
    for Completion_Response'Write use Write_Completion_Response;
    for CompletionList'Write use Write_CompletionList;
+   for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
+   for PublishDiagnostics_Notification'Write use Write_PublishDiagnostics_Notification;
+   for PublishDiagnosticsParams'Write use Write_PublishDiagnosticsParams;
    for ServerCapabilities'Write use Write_ServerCapabilities;
    for TextDocumentItem'Read use Read_TextDocumentItem;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;

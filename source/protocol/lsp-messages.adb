@@ -1,6 +1,11 @@
 with League.Holders;
+with League.JSON.Arrays;
 with League.JSON.Streams;
 with League.JSON.Values;
+
+------------------
+-- LSP.Messages --
+------------------
 
 package body LSP.Messages is
 
@@ -111,6 +116,52 @@ package body LSP.Messages is
       TextDocumentClientCapabilities'Read (S, V.textDocument);
       JS.End_Object;
    end Read_ClientCapabilities;
+
+   ----------------------
+   -- Write_Diagnostic --
+   ----------------------
+
+   not overriding procedure Write_Diagnostic
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Diagnostic)
+   is
+      use type League.Strings.Universal_String;
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"range");
+      Span'Write (S, V.span);
+      JS.Key (+"severity");
+      Optional_DiagnosticSeverity'Write (S, V.severity);
+
+      if V.code.Is_Number then
+         Write_Number (JS, +"code", V.code.Number);
+      elsif not V.code.String.Is_Empty then
+         Write_String (JS, +"code", V.code.String);
+      end if;
+      Write_Optional_String (JS, +"source", V.source);
+      Write_String (JS, +"message", V.message);
+      JS.End_Object;
+   end Write_Diagnostic;
+
+   -----------------------------
+   -- Write_Diagnostic_Vector --
+   -----------------------------
+
+   not overriding procedure Write_Diagnostic_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Diagnostic_Vector)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Array;
+      for Item of V loop
+         Diagnostic'Write (S, Item);
+      end loop;
+      JS.End_Array;
+   end Write_Diagnostic_Vector;
 
    ---------------------------------------
    -- Read_DidChangeConfigurationParams --
@@ -386,7 +437,7 @@ package body LSP.Messages is
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
       JS.Start_Object;
-      JS.Key (+"span");
+      JS.Key (+"range");
       Optional_Span'Read (S, V.span);
       Read_Optional_Number (JS, +"rangeLength", V.rangeLength);
       Read_String (JS, +"text", V.text);
@@ -746,6 +797,24 @@ package body LSP.Messages is
       JS.End_Object;
    end Write_CompletionOptions;
 
+   ------------------------------
+   -- Write_DiagnosticSeverity --
+   ------------------------------
+
+   not overriding procedure Write_DiagnosticSeverity
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DiagnosticSeverity)
+   is
+      use type League.Holders.Universal_Integer;
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Write
+        (League.JSON.Values.To_JSON_Value
+           (League.Holders.Universal_Integer
+                (DiagnosticSeverity'Pos (V)) + 1));
+   end Write_DiagnosticSeverity;
+
    -------------------------------
    -- Write_DocumentLinkOptions --
    -------------------------------
@@ -1017,6 +1086,50 @@ package body LSP.Messages is
       Write_Response_Prexif (S, V);
       JS.End_Object;
    end Write_ResponseMessage;
+
+   -------------------------------------------
+   -- Write_PublishDiagnostics_Notification --
+   -------------------------------------------
+
+   not overriding procedure Write_PublishDiagnostics_Notification
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : PublishDiagnostics_Notification)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"jsonrpc", V.jsonrpc);
+      Write_String (JS, +"method", V.method);
+      JS.Key (+"params");
+      PublishDiagnosticsParams'Write (S, V.params);
+      JS.End_Object;
+   end Write_PublishDiagnostics_Notification;
+
+   ------------------------------------
+   -- Write_PublishDiagnosticsParams --
+   ------------------------------------
+
+   not overriding procedure Write_PublishDiagnosticsParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : PublishDiagnosticsParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"uri");
+      DocumentUri'Write (S, V.uri);
+      JS.Key (+"diagnostics");
+
+      if V.diagnostics.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         Diagnostic_Vector'Write (S, V.diagnostics);
+      end if;
+
+      JS.End_Object;
+   end Write_PublishDiagnosticsParams;
 
    ------------------------------
    -- Write_ServerCapabilities --

@@ -1,3 +1,7 @@
+private with GNAT.OS_Lib;
+
+private with League.Regexps;
+
 with LSP.Types;
 with LSP.Messages;
 
@@ -12,12 +16,14 @@ package Checkers is
    not overriding procedure Run
      (Self   : in out Checker;
       File   : LSP.Types.LSP_String;
-      Result : in out LSP.Messages.Diagnostic_Vectors.Vector);
+      Result : in out LSP.Messages.Diagnostic_Vector);
 
 private
 
    type Checker is tagged record
       Project : LSP.Types.LSP_String;
+      Pattern : League.Regexps.Regexp_Pattern;
+      Compiler : GNAT.OS_Lib.String_Access;
    end record;
 
 end Checkers;

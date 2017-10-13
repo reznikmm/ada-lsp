@@ -20,7 +20,7 @@ package LSP.Servers is
 
    not overriding procedure Send_Notification
      (Self  : in out Server;
-      Value : LSP.Messages.NotificationMessage);
+      Value : in out LSP.Messages.NotificationMessage'Class);
 
    not overriding procedure Run (Self  : in out Server);
 

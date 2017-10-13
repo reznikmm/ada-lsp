@@ -173,9 +173,17 @@ procedure LSP_Test is
 
    overriding procedure Text_Document_Did_Save
      (Self  : access Message_Handler;
-      Value : LSP.Messages.DidSaveTextDocumentParams) is
+      Value : LSP.Messages.DidSaveTextDocumentParams)
+   is
+      File : constant LSP.Types.LSP_String :=
+        Value.textDocument.uri.Tail_From (8);  --  skip 'file://' schema
+      Note : LSP.Messages.PublishDiagnostics_Notification;
    begin
-      null;
+      Self.Checker.Run (File, Note.params.diagnostics);
+
+      Note.method := +"textDocument/publishDiagnostics";
+      Note.params.uri := Value.textDocument.uri;
+      Server.Send_Notification (Note);
    end Text_Document_Did_Save;
 
    -----------------------
