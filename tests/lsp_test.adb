@@ -65,6 +65,11 @@ procedure LSP_Test is
     (Self     : access Message_Handler;
      Value    : LSP.Messages.DidChangeConfigurationParams);
 
+   overriding procedure Text_Document_Code_Action_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.CodeActionParams;
+     Response : in out LSP.Messages.CodeAction_Response);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -79,13 +84,43 @@ procedure LSP_Test is
       Completion_Characters : LSP.Types.LSP_String_Vector;
    begin
       Completion_Characters.Append (+"'");
+
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
+
       Response.result.capabilities.completionProvider :=
         (Is_Set => True, Value =>
            (resolveProvider   => LSP.Types.Optional_False,
             triggerCharacters => Completion_Characters));
+
+      Response.result.capabilities.codeActionProvider :=
+        LSP.Types.Optional_True;
    end Initialize_Request;
+
+   ---------------------------------------
+   -- Text_Document_Code_Action_Request --
+   ---------------------------------------
+
+   overriding procedure Text_Document_Code_Action_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.CodeActionParams;
+     Response : in out LSP.Messages.CodeAction_Response)
+   is
+      pragma Unreferenced (Self);
+      use type League.Strings.Universal_String;
+   begin
+      for Item of Value.context.diagnostics loop
+         if Item.message = +"missing "";""" then
+            declare
+               Command : LSP.Messages.Command;
+            begin
+               Command.title := +"Insert semicolon";
+               Command.command := +"Insert_Semicolon";
+               Response.result.Append (Command);
+            end;
+         end if;
+      end loop;
+   end Text_Document_Code_Action_Request;
 
    --------------------------------------
    -- Text_Document_Completion_Request --

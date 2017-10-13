@@ -75,4 +75,10 @@ package LSP.Types is
      Key    : League.Strings.Universal_String;
      Item   : out LSP.Types.LSP_String);
 
+   procedure Read_Number_Or_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number_Or_String);
+
+
 end LSP.Types;

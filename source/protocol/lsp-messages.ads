@@ -316,6 +316,11 @@ package LSP.Messages is
       message: LSP_String;
    end record;
 
+   not overriding procedure Read_Diagnostic
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Diagnostic);
+   for Diagnostic'Read use Read_Diagnostic;
+
    not overriding procedure Write_Diagnostic
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Diagnostic);
@@ -353,6 +358,11 @@ package LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Command);
    for Command'Write use Write_Command;
+
+   package Command_Vectors is new Ada.Containers.Vectors
+     (Positive, Command);
+
+   type Command_Vector is new Command_Vectors.Vector with null record;
 
    --```typescript
    --interface TextEdit {
@@ -2440,6 +2450,10 @@ package LSP.Messages is
       context: CodeActionContext;
    end record;
 
+   type CodeAction_Response is new ResponseMessage with record
+      result: Command_Vector;
+   end record;
+
    --```typescript
    --interface CodeLensParams {
    --	/**
@@ -2693,13 +2707,21 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out ClientCapabilities);
 
+   not overriding procedure Read_CodeActionContext
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out CodeActionContext);
+
+   not overriding procedure Read_CodeActionParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out CodeActionParams);
+
    not overriding procedure Read_completion
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion);
 
-   not overriding procedure Write_Diagnostic_Vector
+   not overriding procedure Read_Diagnostic_Vector
      (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Diagnostic_Vector);
+      V : out Diagnostic_Vector);
 
    not overriding procedure Read_DidChangeConfigurationParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2745,6 +2767,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
+   not overriding procedure Write_CodeAction_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CodeAction_Response);
+
+   not overriding procedure Write_Command_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Command_Vector);
+
    not overriding procedure Write_Completion_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Completion_Response);
@@ -2752,6 +2782,10 @@ private
    not overriding procedure Write_CompletionList
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : CompletionList);
+
+   not overriding procedure Write_Diagnostic_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Diagnostic_Vector);
 
    not overriding procedure Write_DocumentLinkOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2789,6 +2823,8 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
+   for CodeAction_Response'Write use Write_CodeAction_Response;
+   for Command_Vector'Write use Write_Command_Vector;
    for Completion_Response'Write use Write_Completion_Response;
    for CompletionList'Write use Write_CompletionList;
    for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
@@ -2804,7 +2840,10 @@ private
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
 
    for ClientCapabilities'Read use Read_ClientCapabilities;
+   for CodeActionContext'Read use Read_CodeActionContext;
+   for CodeActionParams'Read use Read_CodeActionParams;
    for completion'Read use Read_completion;
+   for Diagnostic_Vector'Read use Read_Diagnostic_Vector;
    for DidChangeConfigurationParams'Read use Read_DidChangeConfigurationParams;
    for DidChangeTextDocumentParams'Read use Read_DidChangeTextDocumentParams;
    for DidCloseTextDocumentParams'Read use Read_DidCloseTextDocumentParams;

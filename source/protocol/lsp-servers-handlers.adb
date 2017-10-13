@@ -81,6 +81,26 @@ package body LSP.Servers.Handlers is
       Handler.Text_Document_Did_Open (Params);
    end DidOpenTextDocument;
 
+   --------------------
+   -- Do_Code_Action --
+   --------------------
+
+   function Do_Code_Action
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.CodeActionParams;
+      Response : LSP.Messages.CodeAction_Response;
+   begin
+      LSP.Messages.CodeActionParams'Read (Stream, Params);
+      Handler.Text_Document_Code_Action_Request
+        (Response => Response,
+         Value    => Params);
+
+      return Response;
+   end Do_Code_Action;
+
    -------------------
    -- Do_Completion --
    -------------------

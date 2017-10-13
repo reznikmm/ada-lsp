@@ -9,6 +9,30 @@ package body LSP.Types is
       return Id.Is_Number or else not Id.String.Is_Empty;
    end Assigned;
 
+   ---------------------------
+   -- Read_Number_Or_String --
+   ---------------------------
+
+   procedure Read_Number_Or_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.LSP_Number_Or_String)
+   is
+      Value : League.JSON.Values.JSON_Value;
+   begin
+      Stream.Key (Key);
+      Value := Stream.Read;
+
+      if Value.Is_Empty then
+         Item := (Is_Number => False,
+                  String    => League.Strings.Empty_Universal_String);
+      elsif Value.Is_String then
+         Item := (Is_Number => False, String => Value.To_String);
+      else
+         Item := (Is_Number => True, Number => Integer (Value.To_Integer));
+      end if;
+   end Read_Number_Or_String;
+
    -----------------
    -- Read_String --
    -----------------

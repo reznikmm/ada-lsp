@@ -97,6 +97,52 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_completion;
 
+   ---------------------
+   -- Read_Diagnostic --
+   ---------------------
+
+   not overriding procedure Read_Diagnostic
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Diagnostic)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"range");
+      Span'Read (S, V.span);
+      JS.Key (+"severity");
+      Optional_DiagnosticSeverity'Read (S, V.severity);
+      LSP.Types.Read_Number_Or_String (JS, +"code", V.code);
+      Read_Optional_String (JS, +"source", V.source);
+      Read_String (JS, +"message", V.message);
+      JS.End_Object;
+   end Read_Diagnostic;
+
+   ----------------------------
+   -- Read_Diagnostic_Vector --
+   ----------------------------
+
+   not overriding procedure Read_Diagnostic_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out Diagnostic_Vector)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      V.Clear;
+      JS.Start_Array;
+      while not JS.End_Of_Array loop
+         declare
+            Item : Diagnostic;
+         begin
+            Diagnostic'Read (S, Item);
+            V.Append (Item);
+         end;
+      end loop;
+      JS.End_Array;
+   end Read_Diagnostic_Vector;
+
    -----------------------------
    -- Read_ClientCapabilities --
    -----------------------------
@@ -117,6 +163,44 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_ClientCapabilities;
 
+   ----------------------------
+   -- Read_CodeActionContext --
+   ----------------------------
+
+   not overriding procedure Read_CodeActionContext
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out CodeActionContext)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"diagnostics");
+      Diagnostic_Vector'Read (S, V.diagnostics);
+      JS.End_Object;
+   end Read_CodeActionContext;
+
+   ---------------------------
+   -- Read_CodeActionParams --
+   ---------------------------
+
+   not overriding procedure Read_CodeActionParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out CodeActionParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentIdentifier'Read (S, V.textDocument);
+      JS.Key (+"range");
+      Span'Read (S, V.span);
+      JS.Key (+"context");
+      CodeActionContext'Read (S, V.context);
+      JS.End_Object;
+   end Read_CodeActionParams;
+
    ----------------------
    -- Write_Diagnostic --
    ----------------------
@@ -125,7 +209,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Diagnostic)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -171,7 +254,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidChangeConfigurationParams)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -454,12 +536,17 @@ package body LSP.Messages is
    is
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
-      Item : TextDocumentContentChangeEvent;
    begin
       V.Clear;
       JS.Start_Array;
-      TextDocumentContentChangeEvent'Read (S, Item);
-      V.Append (Item);
+      while not JS.End_Of_Array loop
+         declare
+            Item : TextDocumentContentChangeEvent;
+         begin
+            TextDocumentContentChangeEvent'Read (S, Item);
+            V.Append (Item);
+         end;
+      end loop;
       JS.End_Array;
    end Read_TextDocumentContentChangeEvent_Vector;
 
@@ -676,6 +763,46 @@ package body LSP.Messages is
       Write_String (JS, +"command", V.command);
       JS.End_Object;
    end Write_Command;
+
+   -------------------------------
+   -- Write_CodeAction_Response --
+   -------------------------------
+
+   not overriding procedure Write_CodeAction_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : CodeAction_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      if V.result.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         Command_Vector'Write (S, V.result);
+      end if;
+      JS.End_Object;
+   end Write_CodeAction_Response;
+
+   --------------------------
+   -- Write_Command_Vector --
+   --------------------------
+
+   not overriding procedure Write_Command_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Command_Vector)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Array;
+      for Item of V loop
+         Command'Write (S, Item);
+      end loop;
+      JS.End_Array;
+   end Write_Command_Vector;
 
    -------------------------------
    -- Write_Completion_Response --

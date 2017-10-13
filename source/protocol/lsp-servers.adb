@@ -27,7 +27,8 @@ package body LSP.Servers is
    procedure Read_Number_Or_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_Number_Or_String);
+     Item   : out LSP.Types.LSP_Number_Or_String)
+       renames LSP.Types.Read_Number_Or_String;
 
    function To_Element_Vector
     (Stream : in out League.JSON.Streams.JSON_Stream)
@@ -66,7 +67,7 @@ package body LSP.Servers is
          (+"textDocument/documentHighlight", Handlers.Do_Not_Found'Access),
          (+"textDocument/documentSymbol", Handlers.Do_Not_Found'Access),
          (+"workspace/symbol", Handlers.Do_Not_Found'Access),
-         (+"textDocument/codeAction", Handlers.Do_Not_Found'Access),
+         (+"textDocument/codeAction", Handlers.Do_Code_Action'Access),
          (+"textDocument/codeLens", Handlers.Do_Not_Found'Access),
          (+"codeLens/resolve", Handlers.Do_Not_Found'Access),
          (+"textDocument/documentLink", Handlers.Do_Not_Found'Access),
@@ -209,30 +210,6 @@ package body LSP.Servers is
          Write_JSON_RPC (Self.Stream, Output);
       end;
    end Process_Message_From_Stream;
-
-   ---------------------------
-   -- Read_Number_Or_String --
-   ---------------------------
-
-   procedure Read_Number_Or_String
-    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
-     Key    : League.Strings.Universal_String;
-     Item   : out LSP.Types.LSP_Number_Or_String)
-   is
-      Value : League.JSON.Values.JSON_Value;
-   begin
-      Stream.Key (Key);
-      Value := Stream.Read;
-
-      if Value.Is_Empty then
-         Item := (Is_Number => False,
-                  String    => League.Strings.Empty_Universal_String);
-      elsif Value.Is_String then
-         Item := (Is_Number => False, String => Value.To_String);
-      else
-         Item := (Is_Number => True, Number => Integer (Value.To_Integer));
-      end if;
-   end Read_Number_Or_String;
 
    ---------
    -- Run --
