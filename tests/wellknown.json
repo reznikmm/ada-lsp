@@ -1,0 +1,36 @@
+{
+    "Attributes": [
+        {
+            "label": "P'Access",
+            "detail": "For a prefix P that denotes a subprogram:",
+            "documentation": "P'Access yields an access value that designates the subprogram denoted by P. The type of P'Access is an access-to-subprogram type (S), as determined by the expected type. See 3.10.2.",
+            "sortText": "access",
+            "filterText": "access",
+            "insertText": "Access"
+        },
+        {
+            "label": "X'Address",
+            "detail": "For a prefix prefix X that denotes an object, program unit, or label:",
+            "documentation": "Denotes the address of the first of the storage elements allocated to X. For a program unit or label, this value refers to the machine code associated with the corresponding body or statement. The value of this attribute is of type System.Address. See 13.3.",
+            "sortText": "address",
+            "filterText": "address",
+            "insertText": "Address"
+        },
+        {
+            "label": "S'Adjacent",
+            "detail": "For every subtype S of a floating point type T:",
+            "documentation": "S'Adjacent denotes a function with the following specification: \n\nfunction S'Adjacent (X, Towards : T)\n  return T\n\n\nIf Towards = X, the function yields X; otherwise, it yields the machine number of the type T adjacent to X in the direction of Towards, if that machine number exists. If the result would be outside the base range of S, Constraint_Error is raised. When T'Signed_Zeros is True, a zero result has the sign of X. When Towards is zero, its sign has no bearing on the result. See A.5.3.",
+            "sortText": "adjacent",
+            "filterText": "adjacent",
+            "insertText": "Adjacent ($1, $2)$0"
+        },
+        {
+            "label": "S'Base",
+            "detail": "For every scalar subtype S:",
+            "documentation": "S'Base denotes an unconstrained subtype of the type of S. This unconstrained subtype is called the base subtype of the type. See 3.5.",
+            "sortText": "base",
+            "filterText": "base",
+            "insertText": "Base"
+        }
+    ]
+}

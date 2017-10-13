@@ -9,6 +9,8 @@ with LSP.Types;
 with LSP_Documents;
 with Ada.Containers.Hashed_Maps;
 
+with Ada_Wellknown;
+
 procedure LSP_Test is
 
    function "+" (Text : Wide_Wide_String)
@@ -92,12 +94,24 @@ procedure LSP_Test is
       if Position in 1 .. Line.Length
         and then Line (Position).To_Wide_Wide_Character = '''
       then
-         declare
-            Item : LSP.Messages.CompletionItem;
-         begin
-            Item.label := +"Range";
-            Response.result.items.Append (Item);
-         end;
+         Response.result.items.Append (Ada_Wellknown.Attributes);
+
+         --  Remove extra ' after cursor (if any)
+         if Position + 1 in 1 .. Line.Length
+           and then Line (Position + 1).To_Wide_Wide_Character = '''
+         then
+            declare
+               use type LSP.Types.UTF_16_Index;
+               Edit : constant LSP.Messages.TextEdit :=
+                 (((Value.position.line, Value.position.character),
+                   (Value.position.line, Value.position.character + 1)),
+                  others => <>);
+            begin
+               for Item of Response.result.items loop
+                  Item.additionalTextEdits.Append (Edit);
+               end loop;
+            end;
+         end if;
       end if;
    end Text_Document_Completion_Request;
 
@@ -157,6 +171,7 @@ procedure LSP_Test is
    Handler : aliased Message_Handler;
    Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
 begin
+   Ada_Wellknown.Initialize;
    Server.Initialize
      (Stream'Unchecked_Access,
       Handler'Unchecked_Access,
