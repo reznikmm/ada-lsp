@@ -91,6 +91,7 @@ package body LSP.Servers is
          (+"textDocument/didChange", Handlers.DidChangeTextDocument'Access),
          (+"textDocument/didClose", Handlers.DidCloseTextDocument'Access),
          (+"textDocument/didOpen", Handlers.DidOpenTextDocument'Access),
+         (+"textDocument/didSave", Handlers.DidSaveTextDocument'Access),
          (+"workspace/didChangeConfiguration",
           Handlers.DidChangeConfiguration'Access),
          (+"", Handlers.Ignore_Notification'Access));

@@ -35,6 +35,10 @@ package LSP.Message_Handlers is
      (Self  : access Notification_Handler;
       Value : LSP.Messages.DidChangeTextDocumentParams) is null;
 
+   not overriding procedure Text_Document_Did_Save
+     (Self  : access Notification_Handler;
+      Value : LSP.Messages.DidSaveTextDocumentParams) is null;
+
    not overriding procedure Text_Document_Did_Close
      (Self  : access Notification_Handler;
       Value : LSP.Messages.DidCloseTextDocumentParams) is null;

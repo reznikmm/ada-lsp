@@ -49,6 +49,10 @@ procedure LSP_Test is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidCloseTextDocumentParams);
 
+   overriding procedure Text_Document_Did_Save
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidSaveTextDocumentParams);
+
    overriding procedure Text_Document_Completion_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
@@ -153,6 +157,17 @@ procedure LSP_Test is
       Document.Initalize (Value.textDocument.text);
       Self.Documents.Include (Value.textDocument.uri, Document);
    end Text_Document_Did_Open;
+
+   ----------------------------
+   -- Text_Document_Did_Save --
+   ----------------------------
+
+   overriding procedure Text_Document_Did_Save
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidSaveTextDocumentParams) is
+   begin
+      null;
+   end Text_Document_Did_Save;
 
    Server  : LSP.Servers.Server;
 

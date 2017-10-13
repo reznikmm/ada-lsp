@@ -2695,6 +2695,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidOpenTextDocumentParams);
 
+   not overriding procedure Read_DidSaveTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidSaveTextDocumentParams);
+
    not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
@@ -2772,6 +2776,7 @@ private
    for DidChangeTextDocumentParams'Read use Read_DidChangeTextDocumentParams;
    for DidCloseTextDocumentParams'Read use Read_DidCloseTextDocumentParams;
    for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
+   for DidSaveTextDocumentParams'Read use Read_DidSaveTextDocumentParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;
    for InitializeParams'Read use Read_InitializeParams;
    for synchronization'Read use Read_synchronization;

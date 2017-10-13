@@ -184,6 +184,24 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_DidOpenTextDocumentParams;
 
+   ------------------------------------
+   -- Read_DidSaveTextDocumentParams --
+   ------------------------------------
+
+   not overriding procedure Read_DidSaveTextDocumentParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DidSaveTextDocumentParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentIdentifier'Read (S, V.textDocument);
+      Read_Optional_String (JS, +"text", V.text);
+      JS.End_Object;
+   end Read_DidSaveTextDocumentParams;
+
    ---------------------------------
    -- Read_TextDocumentIdentifier --
    ---------------------------------
