@@ -1,3 +1,4 @@
+with League.JSON.Objects;
 with League.Strings.Hash;
 
 with LSP.Messages;
@@ -10,6 +11,7 @@ with LSP_Documents;
 with Ada.Containers.Hashed_Maps;
 
 with Ada_Wellknown;
+with Checkers;
 
 procedure LSP_Test is
 
@@ -27,6 +29,7 @@ procedure LSP_Test is
    type Message_Handler is new LSP.Message_Handlers.Request_Handler
      and LSP.Message_Handlers.Notification_Handler with record
       Documents : Document_Maps.Map;
+      Checker   : Checkers.Checker;
    end record;
 
    overriding procedure Initialize_Request
@@ -57,6 +60,10 @@ procedure LSP_Test is
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Completion_Response);
+
+   overriding procedure Workspace_Did_Change_Configuration
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DidChangeConfigurationParams);
 
    ------------------------
    -- Initialize_Request --
@@ -158,6 +165,8 @@ procedure LSP_Test is
       Self.Documents.Include (Value.textDocument.uri, Document);
    end Text_Document_Did_Open;
 
+   Server  : LSP.Servers.Server;
+
    ----------------------------
    -- Text_Document_Did_Save --
    ----------------------------
@@ -168,8 +177,6 @@ procedure LSP_Test is
    begin
       null;
    end Text_Document_Did_Save;
-
-   Server  : LSP.Servers.Server;
 
    -----------------------
    -- Exit_Notification --
@@ -182,6 +189,25 @@ procedure LSP_Test is
    begin
       Server.Stop;
    end Exit_Notification;
+
+   ----------------------------------------
+   -- Workspace_Did_Change_Configuration --
+   ----------------------------------------
+
+   overriding procedure Workspace_Did_Change_Configuration
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DidChangeConfigurationParams)
+   is
+      Ada : League.JSON.Objects.JSON_Object;
+   begin
+      if Value.settings.To_Object.Contains (+"ada") then
+         Ada := Value.settings.To_Object.Value (+"ada").To_Object;
+      end if;
+
+      if Ada.Contains (+"project_file") then
+         Self.Checker.Initialize (Ada.Value (+"project_file").To_String);
+      end if;
+   end Workspace_Did_Change_Configuration;
 
    Handler : aliased Message_Handler;
    Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;

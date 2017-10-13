@@ -18,7 +18,7 @@ package body LSP.Servers.Handlers is
    begin
       LSP.Messages.DidChangeConfigurationParams'Read (Stream, Params);
 
-      Handler.Workspace_Did_Change_Configuration_Request (Params);
+      Handler.Workspace_Did_Change_Configuration (Params);
    end DidChangeConfiguration;
 
    ---------------------------
