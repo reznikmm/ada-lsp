@@ -2670,8 +2670,10 @@ package LSP.Messages is
    --```
    type ExecuteCommandParams is record
       command: LSP_String;
-      --  arguments?: any[];
+      arguments: LSP_Any;
    end record;
+
+   type ExecuteCommand_Response is new ResponseMessage with null record;
 
    --```typescript
    --export interface ApplyWorkspaceEditParams {
@@ -2747,6 +2749,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
 
+   not overriding procedure Read_ExecuteCommandParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ExecuteCommandParams);
+
    not overriding procedure Read_InitializeParams
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out InitializeParams);
@@ -2791,6 +2797,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : DocumentLinkOptions);
 
+   not overriding procedure Write_ExecuteCommand_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ExecuteCommand_Response);
+
    not overriding procedure Write_ExecuteCommandOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ExecuteCommandOptions);
@@ -2829,6 +2839,7 @@ private
    for CompletionList'Write use Write_CompletionList;
    for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
+   for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
@@ -2850,6 +2861,7 @@ private
    for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for DidSaveTextDocumentParams'Read use Read_DidSaveTextDocumentParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;
+   for ExecuteCommandParams'Read use Read_ExecuteCommandParams;
    for InitializeParams'Read use Read_InitializeParams;
    for synchronization'Read use Read_synchronization;
    for TextDocumentClientCapabilities'Read use Read_TextDocumentClientCapabilities;

@@ -25,6 +25,11 @@ package LSP.Message_Handlers is
      Value    : LSP.Messages.CodeActionParams;
      Response : in out LSP.Messages.CodeAction_Response) is null;
 
+   not overriding procedure Workspace_Execute_Command_Request
+    (Self     : access Request_Handler;
+     Value    : LSP.Messages.ExecuteCommandParams;
+     Response : in out LSP.Messages.ExecuteCommand_Response) is null;
+
    type Notification_Handler is limited interface;
    type Notification_Handler_Access is access all Notification_Handler'Class;
 

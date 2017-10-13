@@ -121,6 +121,26 @@ package body LSP.Servers.Handlers is
       return Response;
    end Do_Completion;
 
+   ------------------------
+   -- Do_Execute_Command --
+   ------------------------
+
+   function Do_Execute_Command
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.ExecuteCommandParams;
+      Response : LSP.Messages.ExecuteCommand_Response;
+   begin
+      LSP.Messages.ExecuteCommandParams'Read (Stream, Params);
+      Handler.Workspace_Execute_Command_Request
+        (Response => Response,
+         Value    => Params);
+
+      return Response;
+   end Do_Execute_Command;
+
    -------------
    -- Do_Exit --
    -------------

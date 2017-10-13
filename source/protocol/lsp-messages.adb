@@ -7,6 +7,10 @@ with League.JSON.Values;
 -- LSP.Messages --
 ------------------
 
+------------------
+-- LSP.Messages --
+------------------
+
 package body LSP.Messages is
 
    function "+" (Text : Wide_Wide_String)
@@ -86,7 +90,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out completion)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -151,7 +154,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out ClientCapabilities)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -271,7 +273,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidChangeTextDocumentParams)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -398,7 +399,6 @@ package body LSP.Messages is
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration)
    is
-      use type League.Strings.Universal_String;
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (S.all);
    begin
@@ -407,6 +407,24 @@ package body LSP.Messages is
         (JS, +"dynamicRegistration", Optional_Boolean (V));
       JS.End_Object;
    end Read_dynamicRegistration;
+
+   -------------------------------
+   -- Read_ExecuteCommandParams --
+   -------------------------------
+
+   not overriding procedure Read_ExecuteCommandParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ExecuteCommandParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Read_String (JS, +"command", V.command);
+      JS.Key (+"arguments");
+      V.arguments := JS.Read;
+      JS.End_Object;
+   end Read_ExecuteCommandParams;
 
    ---------------------------
    -- Read_InitializeParams --
@@ -975,6 +993,24 @@ package body LSP.Messages is
         (JS, +"moreTriggerCharacter", V.moreTriggerCharacter);
       JS.End_Object;
    end Write_DocumentOnTypeFormattingOptions;
+
+   -----------------------------------
+   -- Write_ExecuteCommand_Response --
+   -----------------------------------
+
+   not overriding procedure Write_ExecuteCommand_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ExecuteCommand_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      JS.Write (League.JSON.Values.Null_JSON_Value);
+      JS.End_Object;
+   end Write_ExecuteCommand_Response;
 
    ---------------------------------
    -- Write_ExecuteCommandOptions --

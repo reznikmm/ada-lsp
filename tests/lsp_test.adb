@@ -82,8 +82,10 @@ procedure LSP_Test is
       pragma Unreferenced (Self, Value);
 
       Completion_Characters : LSP.Types.LSP_String_Vector;
+      Commands              : LSP.Types.LSP_String_Vector;
    begin
       Completion_Characters.Append (+"'");
+      Commands.Append (+"Insert_Semicolon");
 
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
@@ -95,6 +97,9 @@ procedure LSP_Test is
 
       Response.result.capabilities.codeActionProvider :=
         LSP.Types.Optional_True;
+
+      Response.result.capabilities.executeCommandProvider :=
+        (commands => Commands);
    end Initialize_Request;
 
    ---------------------------------------

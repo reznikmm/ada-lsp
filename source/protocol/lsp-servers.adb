@@ -76,7 +76,7 @@ package body LSP.Servers is
          (+"textDocument/rangeFormatting", Handlers.Do_Not_Found'Access),
          (+"textDocument/onTypeFormatting", Handlers.Do_Not_Found'Access),
          (+"textDocument/rename", Handlers.Do_Not_Found'Access),
-         (+"workspace/executeCommand", Handlers.Do_Not_Found'Access),
+         (+"workspace/executeCommand", Handlers.Do_Execute_Command'Access),
          (+"", Handlers.Do_Not_Found'Access));
 
       type Notification_Info is record
