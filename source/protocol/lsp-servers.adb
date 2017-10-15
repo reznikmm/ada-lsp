@@ -5,10 +5,8 @@ with League.JSON.Documents;
 with League.JSON.Objects;
 with League.JSON.Streams;
 with League.JSON.Values;
-with League.Stream_Element_Vectors;
 with League.Strings;
 
-with LSP.Types;
 with LSP.Servers.Handlers;
 
 package body LSP.Servers is
@@ -20,9 +18,18 @@ package body LSP.Servers is
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
 
+   procedure Process_Message_Loop
+     (Self       : in out Server'Class;
+      Request_Id : LSP.Types.LSP_Number;
+      Result     : out LSP.Types.LSP_Any;
+      Error      : out LSP.Messages.Optional_ResponseError);
+
    procedure Process_Message_From_Stream
-     (Self   : in out Server'Class;
-      Stream : access Ada.Streams.Root_Stream_Type'Class);
+     (Self       : in out Server'Class;
+      Stream     : access Ada.Streams.Root_Stream_Type'Class;
+      Request_Id : out LSP.Types.LSP_Number_Or_String;
+      Result     : out LSP.Types.LSP_Any;
+      Error      : out LSP.Messages.Optional_ResponseError);
 
    procedure Read_Number_Or_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -117,8 +124,11 @@ package body LSP.Servers is
    ---------------------------------
 
    procedure Process_Message_From_Stream
-     (Self   : in out Server'Class;
-      Stream : access Ada.Streams.Root_Stream_Type'Class)
+     (Self       : in out Server'Class;
+      Stream     : access Ada.Streams.Root_Stream_Type'Class;
+      Request_Id : out LSP.Types.LSP_Number_Or_String;
+      Result     : out LSP.Types.LSP_Any;
+      Error      : out LSP.Messages.Optional_ResponseError)
    is
       use type League.Strings.Universal_String;
       procedure Send_Not_Initialized
@@ -163,20 +173,28 @@ package body LSP.Servers is
       JS : League.JSON.Streams.JSON_Stream'Class renames
         League.JSON.Streams.JSON_Stream'Class (Stream.all);
 
-      Request_Id : LSP.Types.LSP_Number_Or_String;
+      Not_Set    : constant LSP.Types.LSP_Number_Or_String :=
+        (Is_Number => False, String => League.Strings.Empty_Universal_String);
       Version    : LSP.Types.LSP_String;
-      Method     : LSP.Types.LSP_String;
+      Method     : LSP.Types.Optional_String;
    begin
       JS.Start_Object;
       LSP.Types.Read_String (JS, +"jsonrpc", Version);
-      LSP.Types.Read_String (JS, +"method", Method);
+      LSP.Types.Read_Optional_String (JS, +"method", Method);
       Read_Number_Or_String (JS, +"id", Request_Id);
-      JS.Key (+"params");
 
-      if LSP.Types.Assigned (Request_Id) then
+      if not Method.Is_Set then
+         JS.Key (+"result");
+         Result := JS.Read;
+         JS.Key (+"error");
+         LSP.Messages.Optional_ResponseError'Read (Stream, Error);
+
+         return;
+      elsif LSP.Types.Assigned (Request_Id) then
          if not Self.Initilized then
-            if Method /= +"initialize" then
+            if Method.Value /= +"initialize" then
                Send_Not_Initialized (Request_Id);
+               Request_Id := Not_Set;
                return;
             else
                Self.Initilized := True;
@@ -184,21 +202,24 @@ package body LSP.Servers is
          end if;
       else
          if Self.Initilized then
+            JS.Key (+"params");
             Self.Notifications.Dispatch
-              (Method  => Method,
+              (Method  => Method.Value,
                Stream  => Stream,
                Handler => Self.Notif_Handler);
          end if;
 
+         Request_Id := Not_Set;
          return;
       end if;
 
+      JS.Key (+"params");
       declare
          Out_Stream : aliased League.JSON.Streams.JSON_Stream;
          Output     : League.Stream_Element_Vectors.Stream_Element_Vector;
          Response   : LSP.Messages.ResponseMessage'Class :=
            Self.Requests.Dispatch
-             (Method  => Method,
+             (Method  => Method.Value,
               Stream  => Stream,
               Handler => Self.Req_Handler);
       begin
@@ -208,21 +229,28 @@ package body LSP.Servers is
            (Out_Stream'Access, Response);
          Output := To_Element_Vector (Out_Stream);
          Write_JSON_RPC (Self.Stream, Output);
+         Request_Id := Not_Set;
       end;
    end Process_Message_From_Stream;
 
-   ---------
-   -- Run --
-   ---------
+   --------------------------
+   -- Process_Message_Loop --
+   --------------------------
 
-   not overriding procedure Run (Self  : in out Server) is
+   procedure Process_Message_Loop
+     (Self       : in out Server'Class;
+      Request_Id : LSP.Types.LSP_Number;
+      Result     : out LSP.Types.LSP_Any;
+      Error      : out LSP.Messages.Optional_ResponseError)
+   is
       use type Ada.Streams.Stream_Element_Count;
 
       procedure Parse_Header
         (Length : out Ada.Streams.Stream_Element_Count;
          Vector : in out League.Stream_Element_Vectors.Stream_Element_Vector);
       procedure Parse_JSON
-        (Vector : League.Stream_Element_Vectors.Stream_Element_Vector);
+        (Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
+         Stop   : in out Boolean);
       procedure Parse_Line
         (Line   : String;
          Length : in out Ada.Streams.Stream_Element_Count);
@@ -289,19 +317,26 @@ package body LSP.Servers is
       ----------------
 
       procedure Parse_JSON
-        (Vector : League.Stream_Element_Vectors.Stream_Element_Vector)
+        (Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
+         Stop   : in out Boolean)
       is
          In_Stream      : aliased League.JSON.Streams.JSON_Stream;
          Document       : League.JSON.Documents.JSON_Document;
          JSON_Object    : League.JSON.Objects.JSON_Object;
          JSON_Array     : League.JSON.Arrays.JSON_Array;
+         Message_Id     : LSP.Types.LSP_Number_Or_String;
       begin
          Document := League.JSON.Documents.From_JSON (Vector);
          JSON_Object := Document.To_JSON_Object;
          JSON_Array.Append (JSON_Object.To_JSON_Value);
          In_Stream.Set_JSON_Document (JSON_Array.To_JSON_Document);
 
-         Self.Process_Message_From_Stream (In_Stream'Access);
+         Self.Process_Message_From_Stream
+           (In_Stream'Access, Message_Id, Result, Error);
+
+         if Message_Id.Is_Number and then Message_Id.Number = Request_Id then
+            Stop := True;
+         end if;
       end Parse_JSON;
 
       ----------------
@@ -322,12 +357,14 @@ package body LSP.Servers is
          end if;
       end Parse_Line;
 
-      Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
+      Stop   : Boolean := False;
+      Vector : League.Stream_Element_Vectors.Stream_Element_Vector :=
+        Self.Vector;
       Length : Ada.Streams.Stream_Element_Count := 0;
       Buffer : Ada.Streams.Stream_Element_Array (1 .. 512);
       Last   : Ada.Streams.Stream_Element_Count;
    begin
-      while not Self.Stop loop
+      while not (Self.Stop or Stop) loop
          Parse_Header (Length, Vector);
          Last := Vector.Length;
          Buffer (1 .. Last) := Vector.To_Stream_Element_Array;
@@ -346,15 +383,27 @@ package body LSP.Servers is
             end if;
 
             if Length = 0 then
-               Parse_JSON (Vector);
-               Vector.Clear;
-               Vector.Append (Buffer (1 .. Last));
+               Self.Vector.Clear;
+               Self.Vector.Append (Buffer (1 .. Last));
+               Parse_JSON (Vector, Stop);
+               Vector := Self.Vector;
                exit;
             else
                Self.Stream.Read (Buffer, Last);
             end if;
          end loop;
       end loop;
+   end Process_Message_Loop;
+
+   ---------
+   -- Run --
+   ---------
+
+   not overriding procedure Run (Self  : in out Server) is
+      Result     : LSP.Types.LSP_Any;
+      Error      : LSP.Messages.Optional_ResponseError;
+   begin
+      Self.Process_Message_Loop (0, Result, Error);
    end Run;
 
    -----------------------
@@ -400,6 +449,42 @@ package body LSP.Servers is
    begin
       return JSON_Object.To_JSON_Document.To_JSON;
    end To_Element_Vector;
+
+   --------------------------
+   -- Workspace_Apply_Edit --
+   --------------------------
+
+   not overriding procedure Workspace_Apply_Edit
+     (Self     : in out Server;
+      Params   : LSP.Messages.ApplyWorkspaceEditParams;
+      Applied  : out Boolean;
+      Error    : out LSP.Messages.Optional_ResponseError)
+   is
+      Request        : constant LSP.Messages.ApplyWorkspaceEdit_Request :=
+        (jsonrpc => +"2.0",
+         id      => (Is_Number => True, Number => Self.Last_Request),
+         method  => +"workspace/applyEdit",
+         params  => Params);
+      JSON_Stream    : aliased League.JSON.Streams.JSON_Stream;
+      Element_Vector : League.Stream_Element_Vectors.Stream_Element_Vector;
+      Result         : LSP.Types.LSP_Any;
+   begin
+      Self.Last_Request := Self.Last_Request + 1;
+      LSP.Messages.ApplyWorkspaceEdit_Request'Write
+        (JSON_Stream'Access, Request);
+      Element_Vector := To_Element_Vector (JSON_Stream);
+      Write_JSON_RPC (Self.Stream, Element_Vector);
+      Self.Process_Message_Loop
+        (Request_Id => Request.id.Number,
+         Result     => Result,
+         Error      => Error);
+
+      if Error.Is_Set then
+         Applied := False;
+      else
+         Applied := Result.To_Object.Value (+"applied").To_Boolean;
+      end if;
+   end Workspace_Apply_Edit;
 
    --------------------
    -- Write_JSON_RPC --

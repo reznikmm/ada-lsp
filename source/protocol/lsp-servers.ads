@@ -2,9 +2,12 @@ with Ada.Streams;
 
 with LSP.Messages;
 with LSP.Message_Handlers;
+with LSP.Types;
 
 private with LSP.Notification_Dispatchers;
 private with LSP.Request_Dispatchers;
+
+private with League.Stream_Element_Vectors;
 
 package LSP.Servers is
    pragma Preelaborate;
@@ -27,6 +30,12 @@ package LSP.Servers is
    not overriding procedure Stop (Self  : in out Server);
    --  Ask server to stop after processing current message
 
+   not overriding procedure Workspace_Apply_Edit
+     (Self     : in out Server;
+      Params   : LSP.Messages.ApplyWorkspaceEditParams;
+      Applied  : out Boolean;
+      Error    : out LSP.Messages.Optional_ResponseError);
+
 private
 
    type Server is tagged limited record
@@ -39,6 +48,8 @@ private
       Requests      : aliased LSP.Request_Dispatchers.Request_Dispatcher;
       Notifications : aliased LSP.Notification_Dispatchers
         .Notification_Dispatcher;
+      Last_Request  : LSP.Types.LSP_Number := 1;
+      Vector        : League.Stream_Element_Vectors.Stream_Element_Vector;
    end record;
 
 end LSP.Servers;
