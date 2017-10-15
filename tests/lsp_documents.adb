@@ -18,10 +18,22 @@ package body LSP_Documents is
    ---------------
 
    procedure Initalize
-     (Self : out Document;
-      Text : LSP.Types.LSP_String) is
+     (Self    : out Document;
+      Text    : LSP.Types.LSP_String;
+      Version : LSP.Types.Version_Id) is
    begin
       Self.Lines := Text.Split (Ada.Characters.Wide_Wide_Latin_1.LF);
+      Self.Version := Version;
    end Initalize;
+
+   -------------
+   -- Version --
+   -------------
+
+   not overriding function Version
+     (Self : Document) return LSP.Types.Version_Id is
+   begin
+      return Self.Version;
+   end Version;
 
 end LSP_Documents;

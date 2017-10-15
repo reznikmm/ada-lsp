@@ -1,4 +1,5 @@
 with League.JSON.Objects;
+with League.JSON.Streams;
 with League.Strings.Hash;
 
 with LSP.Messages;
@@ -26,7 +27,8 @@ procedure LSP_Test is
       Equivalent_Keys => League.Strings."=",
       "="             => LSP_Documents."=");
 
-   type Message_Handler is new LSP.Message_Handlers.Request_Handler
+   type Message_Handler (Server  : access LSP.Servers.Server) is
+     new LSP.Message_Handlers.Request_Handler
      and LSP.Message_Handlers.Notification_Handler with record
       Documents : Document_Maps.Map;
       Checker   : Checkers.Checker;
@@ -65,6 +67,11 @@ procedure LSP_Test is
     (Self     : access Message_Handler;
      Value    : LSP.Messages.DidChangeConfigurationParams);
 
+   overriding procedure Workspace_Execute_Command_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.ExecuteCommandParams;
+     Response : in out LSP.Messages.ExecuteCommand_Response);
+
    overriding procedure Text_Document_Code_Action_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.CodeActionParams;
@@ -85,7 +92,7 @@ procedure LSP_Test is
       Commands              : LSP.Types.LSP_String_Vector;
    begin
       Completion_Characters.Append (+"'");
-      Commands.Append (+"Insert_Semicolon");
+      Commands.Append (+"Text_Edit");
 
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
@@ -111,16 +118,26 @@ procedure LSP_Test is
      Value    : LSP.Messages.CodeActionParams;
      Response : in out LSP.Messages.CodeAction_Response)
    is
-      pragma Unreferenced (Self);
       use type League.Strings.Universal_String;
    begin
       for Item of Value.context.diagnostics loop
          if Item.message = +"missing "";""" then
             declare
-               Command : LSP.Messages.Command;
+               Edit      : LSP.Messages.TextDocumentEdit;
+               Command   : LSP.Messages.Command;
+               JS        : aliased League.JSON.Streams.JSON_Stream;
+               Insert    : constant LSP.Messages.TextEdit :=
+                 (Value.span, +";");
             begin
+               Edit.textDocument :=
+                 (Value.textDocument with
+                  version => Self.Documents (Value.textDocument.uri).Version);
+               Edit.edits.Append (Insert);
+               LSP.Messages.TextDocumentEdit'Write (JS'Access, Edit);
                Command.title := +"Insert semicolon";
-               Command.command := +"Insert_Semicolon";
+               Command.command := +"Text_Edit";
+               Command.arguments :=
+                 JS.Get_JSON_Document.To_JSON_Array.To_JSON_Value;
                Response.result.Append (Command);
             end;
          end if;
@@ -176,7 +193,9 @@ procedure LSP_Test is
    is
       Document : LSP_Documents.Document;
    begin
-      Document.Initalize (Value.contentChanges.Last_Element.text);
+      Document.Initalize
+        (Value.contentChanges.Last_Element.text,
+         Value.textDocument.version);
       Self.Documents.Replace (Value.textDocument.uri, Document);
    end Text_Document_Did_Change;
 
@@ -201,11 +220,11 @@ procedure LSP_Test is
    is
       Document : LSP_Documents.Document;
    begin
-      Document.Initalize (Value.textDocument.text);
+      Document.Initalize
+        (Value.textDocument.text,
+         Value.textDocument.version);
       Self.Documents.Include (Value.textDocument.uri, Document);
    end Text_Document_Did_Open;
-
-   Server  : LSP.Servers.Server;
 
    ----------------------------
    -- Text_Document_Did_Save --
@@ -223,19 +242,16 @@ procedure LSP_Test is
 
       Note.method := +"textDocument/publishDiagnostics";
       Note.params.uri := Value.textDocument.uri;
-      Server.Send_Notification (Note);
+      Self.Server.Send_Notification (Note);
    end Text_Document_Did_Save;
 
    -----------------------
    -- Exit_Notification --
    -----------------------
 
-   overriding procedure Exit_Notification
-     (Self : access Message_Handler)
-   is
-      pragma Unreferenced (Self);
+   overriding procedure Exit_Notification (Self : access Message_Handler) is
    begin
-      Server.Stop;
+      Self.Server.Stop;
    end Exit_Notification;
 
    ----------------------------------------
@@ -257,7 +273,36 @@ procedure LSP_Test is
       end if;
    end Workspace_Did_Change_Configuration;
 
-   Handler : aliased Message_Handler;
+   ---------------------------------------
+   -- Workspace_Execute_Command_Request --
+   ---------------------------------------
+
+   overriding procedure Workspace_Execute_Command_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.ExecuteCommandParams;
+     Response : in out LSP.Messages.ExecuteCommand_Response)
+   is
+      use type League.Strings.Universal_String;
+      pragma Unreferenced (Response);
+      Params  : LSP.Messages.ApplyWorkspaceEditParams;
+      Applied : Boolean;
+      Error   : LSP.Messages.Optional_ResponseError;
+   begin
+      if Value.command = +"Text_Edit" then
+         declare
+            JS        : aliased League.JSON.Streams.JSON_Stream;
+            Edit      : LSP.Messages.TextDocumentEdit;
+         begin
+            JS.Set_JSON_Document (Value.arguments.To_Array.To_JSON_Document);
+            LSP.Messages.TextDocumentEdit'Read (JS'Access, Edit);
+            Params.edit.documentChanges.Append (Edit);
+            Self.Server.Workspace_Apply_Edit (Params, Applied, Error);
+         end;
+      end if;
+   end Workspace_Execute_Command_Request;
+
+   Server  : aliased LSP.Servers.Server;
+   Handler : aliased Message_Handler (Server'Access);
    Stream  : aliased LSP.Stdio_Streams.Stdio_Stream;
 begin
    Ada_Wellknown.Initialize;
