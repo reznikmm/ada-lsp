@@ -116,6 +116,11 @@ package LSP.Messages is
       data: LSP_Any;
    end record;
 
+   not overriding procedure Read_ResponseError
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ResponseError);
+   for ResponseError'Read use Read_ResponseError;
+
    not overriding procedure Write_ResponseError
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ResponseError);
@@ -351,7 +356,7 @@ package LSP.Messages is
    type Command is record
       title: LSP_String;
       command: LSP_String;
-      --  arguments?: any[];  ???
+      arguments: LSP_Any;
    end record;
 
    not overriding procedure Write_Command
@@ -384,6 +389,11 @@ package LSP.Messages is
       newText: LSP_String;
    end record;
 
+   not overriding procedure Read_TextEdit
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextEdit);
+   for TextEdit'Read use Read_TextEdit;
+
    not overriding procedure Write_TextEdit
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextEdit);
@@ -393,6 +403,17 @@ package LSP.Messages is
    type Optional_TextEdit is new Optional_TextEdits.Optional_Type;
 
    package TextEdit_Vectors is new Ada.Containers.Vectors (Positive, TextEdit);
+   type TextEdit_Vector is new TextEdit_Vectors.Vector with null record;
+
+   not overriding procedure Read_TextEdit_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextEdit_Vector);
+   for TextEdit_Vector'Read use Read_TextEdit_Vector;
+
+   not overriding procedure Write_TextEdit_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextEdit_Vector);
+   for TextEdit_Vector'Write use Write_TextEdit_Vector;
 
    --+N
    --```typescript
@@ -431,6 +452,12 @@ package LSP.Messages is
    for VersionedTextDocumentIdentifier'Read use
      Read_VersionedTextDocumentIdentifier;
 
+   not overriding procedure Write_VersionedTextDocumentIdentifier
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : VersionedTextDocumentIdentifier);
+   for VersionedTextDocumentIdentifier'Write use
+     Write_VersionedTextDocumentIdentifier;
+
    --```typescript
    --export interface TextDocumentEdit {
    --	/**
@@ -446,18 +473,27 @@ package LSP.Messages is
    --```
    type TextDocumentEdit is record
       textDocument: VersionedTextDocumentIdentifier;
-      edits: TextEdit_Vectors.Vector;
+      edits: TextEdit_Vector;
    end record;
+
+   not overriding procedure Read_TextDocumentEdit
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out TextDocumentEdit);
+   for TextDocumentEdit'Read use Read_TextDocumentEdit;
+
+   not overriding procedure Write_TextDocumentEdit
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : TextDocumentEdit);
+   for TextDocumentEdit'Write use Write_TextDocumentEdit;
 
    package TextDocumentEdit_Vectors is
      new Ada.Containers.Vectors (Positive, TextDocumentEdit);
 
    package TextDocumentEdit_Maps is new Ada.Containers.Hashed_Maps
      (Key_Type        => League.Strings.Universal_String,
-      Element_Type    => TextEdit_Vectors.Vector,
+      Element_Type    => TextEdit_Vector,
       Hash            => League.Strings.Hash,
-      Equivalent_Keys => League.Strings."=",
-      "="             => TextEdit_Vectors."=");
+      Equivalent_Keys => League.Strings."=");
 
    --```typescript
    --export interface WorkspaceEdit {
@@ -2061,7 +2097,7 @@ package LSP.Messages is
       insertText: Optional_String;
       insertTextFormat: Optional_InsertTextFormat;
       textEdit: Optional_TextEdit;
-      additionalTextEdits: TextEdit_Vectors.Vector;
+      additionalTextEdits: TextEdit_Vector;
       commitCharacters: LSP_String_Vector;
       command: LSP.Messages.Command;  --  Optional ???
    --	data?: any
@@ -2703,6 +2739,10 @@ package LSP.Messages is
       params : PublishDiagnosticsParams;
    end record;
 
+   type ApplyWorkspaceEdit_Request is new RequestMessage with record
+      params : ApplyWorkspaceEditParams;
+   end record;
+
 private
 
    not overriding procedure Read_ClientCapabilities
@@ -2773,6 +2813,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
+   not overriding procedure Write_ApplyWorkspaceEdit_Request
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ApplyWorkspaceEdit_Request);
+
+   not overriding procedure Write_ApplyWorkspaceEditParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ApplyWorkspaceEditParams);
+
    not overriding procedure Write_CodeAction_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : CodeAction_Response);
@@ -2833,6 +2881,12 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
 
+   not overriding procedure Write_WorkspaceEdit
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : WorkspaceEdit);
+
+   for ApplyWorkspaceEdit_Request'Write use Write_ApplyWorkspaceEdit_Request;
+   for ApplyWorkspaceEditParams'Write use Write_ApplyWorkspaceEditParams;
    for CodeAction_Response'Write use Write_CodeAction_Response;
    for Command_Vector'Write use Write_Command_Vector;
    for Completion_Response'Write use Write_Completion_Response;
@@ -2849,6 +2903,7 @@ private
    for ServerCapabilities'Write use Write_ServerCapabilities;
    for TextDocumentItem'Read use Read_TextDocumentItem;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
+   for WorkspaceEdit'Write use Write_WorkspaceEdit;
 
    for ClientCapabilities'Read use Read_ClientCapabilities;
    for CodeActionContext'Read use Read_CodeActionContext;
