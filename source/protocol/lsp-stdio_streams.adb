@@ -1,9 +1,13 @@
 with GNAT.Sockets;
 with Interfaces.C;
+with Ada.Unchecked_Conversion;
 
 package body LSP.Stdio_Streams is
 
    package C renames Interfaces.C;
+
+   function To_Ada is new Ada.Unchecked_Conversion
+     (Integer, GNAT.Sockets.Socket_Type);
 
    ----------
    -- Read --
@@ -24,7 +28,7 @@ package body LSP.Stdio_Streams is
            with Import => True,
                 Convention => C,
                 Link_Name => "read";
-      Stdin   : constant GNAT.Sockets.Socket_Type := GNAT.Sockets.To_Ada (0);
+      Stdin   : constant GNAT.Sockets.Socket_Type := To_Ada (0);
       Request : GNAT.Sockets.Request_Type (GNAT.Sockets.N_Bytes_To_Read);
       Length  : Natural;
       Done    : C.size_t;
