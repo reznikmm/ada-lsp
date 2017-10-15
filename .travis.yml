@@ -1,0 +1,17 @@
+os:
+  - linux
+
+services:
+  - docker
+
+language: generic
+
+before_install:
+  - tools/travis/travis.sh before_install
+
+script:
+  - tools/travis/travis.sh script
+
+notifications:
+  irc: "irc.rusnet.org.ru#ada-commits"
+
