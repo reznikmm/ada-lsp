@@ -51,7 +51,7 @@ package body Checkers is
       Item.span :=
         (first =>
            (LSP.Types.Line_Number (From - 1),
-            LSP.Types.UTF_16_Index'(0)),
+            LSP.Types.UTF_16_Index (Col - 1)),
          last =>
            (LSP.Types.Line_Number (From - 1),
             LSP.Types.UTF_16_Index (Col - 1)));
