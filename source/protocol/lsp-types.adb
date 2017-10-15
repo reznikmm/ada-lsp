@@ -33,6 +33,27 @@ package body LSP.Types is
       end if;
    end Read_Number_Or_String;
 
+   --------------------------
+   -- Read_Optional_String --
+   --------------------------
+
+   procedure Read_Optional_String
+    (Stream : in out League.JSON.Streams.JSON_Stream'Class;
+     Key    : League.Strings.Universal_String;
+     Item   : out LSP.Types.Optional_String)
+   is
+      Value : League.JSON.Values.JSON_Value;
+   begin
+      Stream.Key (Key);
+      Value := Stream.Read;
+
+      if Value.Is_Empty or Value.Is_Null then
+         Item := (Is_Set => False);
+      else
+         Item := (Is_Set => True, Value => Value.To_String);
+      end if;
+   end Read_Optional_String;
+
    -----------------
    -- Read_String --
    -----------------
