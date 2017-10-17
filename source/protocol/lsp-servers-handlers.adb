@@ -123,6 +123,27 @@ package body LSP.Servers.Handlers is
       end return;
    end Do_Completion;
 
+   -------------------
+   -- Do_Definition --
+   -------------------
+
+   function Do_Definition
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.TextDocumentPositionParams;
+   begin
+      LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
+
+      return Response : LSP.Messages.Definition_Response do
+
+         Handler.Text_Document_Definition_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
+   end Do_Definition;
+
    ------------------------
    -- Do_Execute_Command --
    ------------------------

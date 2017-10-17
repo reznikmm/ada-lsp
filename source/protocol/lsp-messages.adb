@@ -210,6 +210,32 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_CodeActionParams;
 
+   -------------------------------
+   -- Write_Definition_Response --
+   -------------------------------
+
+   not overriding procedure Write_Definition_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Definition_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      if V.result.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V.result loop
+            Location'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+      JS.End_Object;
+   end Write_Definition_Response;
+
    ----------------------
    -- Write_Diagnostic --
    ----------------------
@@ -1233,6 +1259,25 @@ package body LSP.Messages is
            (League.Holders.Universal_Integer
                 (InsertTextFormat'Pos (V)) + 1));
    end Write_InsertTextFormat;
+
+   --------------------
+   -- Write_Location --
+   --------------------
+
+   not overriding procedure Write_Location
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Location)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"uri");
+      DocumentUri'Write (S, V.uri);
+      JS.Key (+"range");
+      Span'Write (S, V.span);
+      JS.End_Object;
+   end Write_Location;
 
    ------------------------
    -- Write_MarkedString --

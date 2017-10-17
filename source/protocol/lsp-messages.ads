@@ -252,6 +252,14 @@ package LSP.Messages is
       span: LSP.Messages.Span;  --  range: is reserved word
    end record;
 
+   not overriding procedure Write_Location
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Location);
+   for Location'Write use Write_Location;
+
+   package Location_Vectors is new Ada.Containers.Vectors
+     (Positive, Location);
+
    --+1
    --```typescript
    --namespace DiagnosticSeverity {
@@ -2777,6 +2785,10 @@ package LSP.Messages is
       params : ApplyWorkspaceEditParams;
    end record;
 
+   type Definition_Response is new ResponseMessage with record
+      result : Location_Vectors.Vector;
+   end record;
+
 private
 
    not overriding procedure Read_ClientCapabilities
@@ -2871,6 +2883,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : CompletionList);
 
+   not overriding procedure Write_Definition_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Definition_Response);
+
    not overriding procedure Write_Diagnostic_Vector
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Diagnostic_Vector);
@@ -2941,6 +2957,7 @@ private
    for Command_Vector'Write use Write_Command_Vector;
    for Completion_Response'Write use Write_Completion_Response;
    for CompletionList'Write use Write_CompletionList;
+   for Definition_Response'Write use Write_Definition_Response;
    for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
