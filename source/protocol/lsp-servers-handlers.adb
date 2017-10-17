@@ -136,7 +136,7 @@ package body LSP.Servers.Handlers is
    begin
       LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
 
-      return Response : LSP.Messages.Definition_Response do
+      return Response : LSP.Messages.Location_Response do
 
          Handler.Text_Document_Definition_Request
            (Response => Response,

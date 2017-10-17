@@ -2785,7 +2785,7 @@ package LSP.Messages is
       params : ApplyWorkspaceEditParams;
    end record;
 
-   type Definition_Response is new ResponseMessage with record
+   type Location_Response is new ResponseMessage with record
       result : Location_Vectors.Vector;
    end record;
 
@@ -2883,10 +2883,6 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : CompletionList);
 
-   not overriding procedure Write_Definition_Response
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : Definition_Response);
-
    not overriding procedure Write_Diagnostic_Vector
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Diagnostic_Vector);
@@ -2918,6 +2914,10 @@ private
    not overriding procedure Write_InitializeResult
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : InitializeResult);
+
+   not overriding procedure Write_Location_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Location_Response);
 
    not overriding procedure Write_Optional_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
@@ -2957,7 +2957,6 @@ private
    for Command_Vector'Write use Write_Command_Vector;
    for Completion_Response'Write use Write_Completion_Response;
    for CompletionList'Write use Write_CompletionList;
-   for Definition_Response'Write use Write_Definition_Response;
    for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
@@ -2966,6 +2965,7 @@ private
    for Hover_Response'Write use Write_Hover_Response;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
+   for Location_Response'Write use Write_Location_Response;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;
    for PublishDiagnostics_Notification'Write use Write_PublishDiagnostics_Notification;
    for PublishDiagnosticsParams'Write use Write_PublishDiagnosticsParams;

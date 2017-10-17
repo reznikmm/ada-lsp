@@ -47,7 +47,7 @@ procedure LSP_Test is
    overriding procedure Text_Document_Definition_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
-     Response : in out LSP.Messages.Definition_Response);
+     Response : in out LSP.Messages.Location_Response);
 
    overriding procedure Text_Document_Did_Open
      (Self  : access Message_Handler;
@@ -217,7 +217,7 @@ procedure LSP_Test is
    overriding procedure Text_Document_Definition_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
-     Response : in out LSP.Messages.Definition_Response)
+     Response : in out LSP.Messages.Location_Response)
    is
       Document : LSP_Documents.Document renames
         Self.Documents (Value.textDocument.uri);
