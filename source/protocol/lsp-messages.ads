@@ -2112,7 +2112,7 @@ package LSP.Messages is
      (Positive, CompletionItem);
 
    type CompletionList is record
-      isIncomplete: Boolean;
+      isIncomplete: Boolean := False;
       items: CompletionItem_Vectors.Vector;
    end record;
 
@@ -2263,6 +2263,11 @@ package LSP.Messages is
       documentation: Optional_String;
    end record;
 
+   not overriding procedure Write_ParameterInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ParameterInformation);
+   for ParameterInformation'Write use Write_ParameterInformation;
+
    package ParameterInformation_Vectors is new Ada.Containers.Vectors
      (Positive, ParameterInformation);
 
@@ -2272,6 +2277,11 @@ package LSP.Messages is
       parameters: ParameterInformation_Vectors.Vector;
    end record;
 
+   not overriding procedure Write_SignatureInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureInformation);
+   for SignatureInformation'Write use Write_SignatureInformation;
+
    package SignatureInformation_Vectors is new Ada.Containers.Vectors
      (Positive, SignatureInformation);
 
@@ -2279,6 +2289,10 @@ package LSP.Messages is
 	signatures: SignatureInformation_Vectors.Vector;
 	activeSignature: Optional_Number;
 	activeParameter: Optional_Number;
+   end record;
+
+   type SignatureHelp_Response is new ResponseMessage with record
+      result: SignatureHelp;
    end record;
 
    --```typescript
@@ -2905,6 +2919,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ServerCapabilities);
 
+   not overriding procedure Write_SignatureHelp
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelp);
+
+   not overriding procedure Write_SignatureHelp_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelp_Response);
+
    not overriding procedure Write_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
@@ -2931,6 +2953,8 @@ private
    for PublishDiagnostics_Notification'Write use Write_PublishDiagnostics_Notification;
    for PublishDiagnosticsParams'Write use Write_PublishDiagnosticsParams;
    for ServerCapabilities'Write use Write_ServerCapabilities;
+   for SignatureHelp'Write use Write_SignatureHelp;
+   for SignatureHelp_Response'Write use Write_SignatureHelp_Response;
    for TextDocumentItem'Read use Read_TextDocumentItem;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
    for WorkspaceEdit'Write use Write_WorkspaceEdit;

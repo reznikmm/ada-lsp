@@ -11,4 +11,8 @@ package Ada_Wellknown is
      (Name : LSP.Types.LSP_String)
       return LSP.Messages.MarkedString_Vectors.Vector;
 
+   function Pragma_Signatures
+     (Name : LSP.Types.LSP_String)
+      return LSP.Messages.SignatureInformation_Vectors.Vector;
+
 end Ada_Wellknown;

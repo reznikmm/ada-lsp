@@ -25,7 +25,15 @@ package body Ada_Wellknown is
       Equivalent_Keys => League.Strings."=",
       "="             => LSP.Messages.MarkedString_Vectors."=");
 
+   package SignatureInformation_Maps is new Ada.Containers.Hashed_Maps
+     (Key_Type        => League.Strings.Universal_String,
+      Element_Type    => LSP.Messages.SignatureInformation,
+      Hash            => League.Strings.Hash,
+      Equivalent_Keys => League.Strings."=",
+      "="             => LSP.Messages."=");
+
    MarkedString_Map : MarkedString_Maps.Map;
+   Signatures : SignatureInformation_Maps.Map;
    Attr : LSP.Messages.CompletionItem_Vectors.Vector;
 
    ---------------------
@@ -68,6 +76,10 @@ package body Ada_Wellknown is
         JSON.To_JSON_Object.Value (+"Hover").To_Object;
       Hover_Keys : constant League.String_Vectors.Universal_String_Vector :=
         Hover.Keys;
+      Sign : constant League.JSON.Objects.JSON_Object :=
+        JSON.To_JSON_Object.Value (+"Signatures").To_Object;
+      Sign_Keys : constant League.String_Vectors.Universal_String_Vector :=
+        Sign.Keys;
    begin
       for J in 1 .. Attr_List.Length loop
          declare
@@ -126,7 +138,56 @@ package body Ada_Wellknown is
             MarkedString_Map.Insert (Key, Next);
          end;
       end loop;
+
+      for J in 1 .. Sign_Keys.Length loop
+         declare
+            Key    : constant League.Strings.Universal_String := Sign_Keys (J);
+            Object : constant League.JSON.Objects.JSON_Object :=
+              Sign.Value (Key).To_Object;
+            Result : LSP.Messages.SignatureInformation;
+            Params : League.JSON.Arrays.JSON_Array;
+         begin
+            Result.label := Object.Value (+"label").To_String;
+            Result.documentation :=
+              (True, Object.Value (+"documentation").To_String);
+            Params := Object.Value (+"params").To_Array;
+            for K in 1 .. Params.Length loop
+               declare
+                  Value : constant League.JSON.Objects.JSON_Object :=
+                    Params (K).To_Object;
+                  Item  : LSP.Messages.ParameterInformation;
+               begin
+                  Item.label := Value.Value (+"label").To_String;
+                  Item.documentation :=
+                    (True, Value.Value (+"documentation").To_String);
+
+                  Result.parameters.Append (Item);
+               end;
+            end loop;
+
+            Signatures.Insert (Key, Result);
+         end;
+      end loop;
    end Initialize;
+
+   -----------------------
+   -- Pragma_Signatures --
+   -----------------------
+
+   function Pragma_Signatures
+     (Name : LSP.Types.LSP_String)
+      return LSP.Messages.SignatureInformation_Vectors.Vector
+   is
+      Cursor : constant SignatureInformation_Maps.Cursor :=
+        Signatures.Find (Name.To_Lowercase);
+   begin
+      if SignatureInformation_Maps.Has_Element (Cursor) then
+         return LSP.Messages.SignatureInformation_Vectors.To_Vector
+           (SignatureInformation_Maps.Element (Cursor), 1);
+      else
+         return LSP.Messages.SignatureInformation_Vectors.Empty_Vector;
+      end if;
+   end Pragma_Signatures;
 
    ---------------
    -- Read_File --

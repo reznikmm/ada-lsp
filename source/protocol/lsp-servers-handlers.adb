@@ -237,6 +237,27 @@ package body LSP.Servers.Handlers is
       end return;
    end Do_Shutdown;
 
+   -----------------------
+   -- Do_Signature_Help --
+   -----------------------
+
+   function Do_Signature_Help
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.TextDocumentPositionParams;
+   begin
+      LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
+
+      return Response : LSP.Messages.SignatureHelp_Response do
+
+         Handler.Text_Document_Signature_Help_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
+   end Do_Signature_Help;
+
    -------------------------
    -- Ignore_Notification --
    -------------------------

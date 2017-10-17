@@ -1,6 +1,12 @@
 with Ada.Characters.Wide_Wide_Latin_1;
 
+with League.Strings;
+
 package body LSP_Documents is
+
+   function "+" (Text : Wide_Wide_String)
+      return League.Strings.Universal_String renames
+       League.Strings.To_Universal_String;
 
    --------------
    -- Get_Line --
@@ -34,12 +40,17 @@ package body LSP_Documents is
      (Self  : Document;
       Where : LSP.Messages.Position) return Lookup_Result
    is
+      use type League.Strings.Universal_String;
+
       type State_Kinds is (Other, Character, Identifier, Tick);
-      Text     : constant LSP.Types.LSP_String := Self.Get_Line (Where.line);
-      State    : State_Kinds := Other;
-      Attr     : Boolean := False;
-      Id_First : Natural := 0;
-      Id_Last  : Natural := 0;
+      Text      : constant LSP.Types.LSP_String := Self.Get_Line (Where.line);
+      State     : State_Kinds := Other;
+      Attr      : Boolean := False;
+      Id_First  : Natural := 0;
+      Id_Last   : Natural := 0;
+      Is_Pragma : Boolean := False;
+      Pragma_Id : League.Strings.Universal_String;
+      Param     : Natural := 1;
    begin
       for J in 1 .. Text.Length loop
          case State is
@@ -63,6 +74,14 @@ package body LSP_Documents is
                elsif not (Text (J).Is_ID_Start or Text (J).Is_ID_Continue) then
                   State := Other;
                   Id_Last := J - 1;
+
+                  if Text.Slice (Id_First, Id_Last) = +"pragma" then
+                     Is_Pragma := True;
+                  elsif Is_Pragma then
+                     Pragma_Id := Text.Slice (Id_First, Id_Last);
+                     Is_Pragma := False;
+                     Param := 1;
+                  end if;
                end if;
             when Tick =>
                if Text (J).Is_ID_Start then
@@ -72,11 +91,20 @@ package body LSP_Documents is
                end if;
          end case;
 
+         if Text (J).To_Wide_Wide_Character = ';' then
+            Is_Pragma := False;
+         elsif Text (J).To_Wide_Wide_Character = ',' then
+            Param := Param + 1;
+         end if;
+
          exit when State /= Identifier and J >= Natural (Where.character);
+
       end loop;
 
       if Attr then
          return (Attribute_Designator, Text.Slice (Id_First, Id_Last));
+      elsif not Pragma_Id.Is_Empty then
+         return (Pragma_Name, Pragma_Id, Param);
       else
          return (Kind => None);
       end if;

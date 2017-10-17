@@ -59,7 +59,6 @@ package body LSP.Messages is
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
      Key    : League.Strings.Universal_String;
      Item   : LSP.Types.Optional_Number);
-   pragma Unreferenced (Write_Optional_Number);
 
    procedure Write_String
     (Stream : in out League.JSON.Streams.JSON_Stream'Class;
@@ -1331,6 +1330,23 @@ package body LSP.Messages is
       end if;
    end Write_Optional_TextDocumentSyncOptions;
 
+   --------------------------------
+   -- Write_ParameterInformation --
+   --------------------------------
+
+   not overriding procedure Write_ParameterInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : ParameterInformation)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"label", V.label);
+      Write_Optional_String (JS, +"documentation", V.documentation);
+      JS.End_Object;
+   end Write_ParameterInformation;
+
    --------------------
    -- Write_Position --
    --------------------
@@ -1520,6 +1536,53 @@ package body LSP.Messages is
       JS.End_Object;
    end Write_ServerCapabilities;
 
+   -------------------------
+   -- Write_SignatureHelp --
+   -------------------------
+
+   not overriding procedure Write_SignatureHelp
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelp)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+
+      JS.Key (+"signatures");
+      if V.signatures.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V.signatures loop
+            SignatureInformation'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+
+      Write_Optional_Number (JS, +"activeSignature", V.activeSignature);
+      Write_Optional_Number (JS, +"activeParameter", V.activeParameter);
+      JS.End_Object;
+   end Write_SignatureHelp;
+
+   ----------------------------------
+   -- Write_SignatureHelp_Response --
+   ----------------------------------
+
+   not overriding procedure Write_SignatureHelp_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureHelp_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      SignatureHelp'Write (S, V.result);
+      JS.End_Object;
+   end Write_SignatureHelp_Response;
+
    --------------------------------
    -- Write_SignatureHelpOptions --
    --------------------------------
@@ -1535,6 +1598,36 @@ package body LSP.Messages is
       Write_String_Vector (JS, +"triggerCharacters", V.triggerCharacters);
       JS.End_Object;
    end Write_SignatureHelpOptions;
+
+   --------------------------------
+   -- Write_SignatureInformation --
+   --------------------------------
+
+   not overriding procedure Write_SignatureInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SignatureInformation)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"label", V.label);
+      Write_Optional_String (JS, +"documentation", V.documentation);
+
+      JS.Key (+"parameters");
+
+      if V.parameters.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V.parameters loop
+            ParameterInformation'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+
+      JS.End_Object;
+   end Write_SignatureInformation;
 
    ----------------
    -- Write_Span --

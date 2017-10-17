@@ -82,6 +82,11 @@ procedure LSP_Test is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Hover_Response);
 
+   overriding procedure Text_Document_Signature_Help_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.SignatureHelp_Response);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -95,9 +100,12 @@ procedure LSP_Test is
 
       Completion_Characters : LSP.Types.LSP_String_Vector;
       Commands              : LSP.Types.LSP_String_Vector;
+      Signature_Keys        : LSP.Types.LSP_String_Vector;
    begin
       Completion_Characters.Append (+"'");
       Commands.Append (+"Text_Edit");
+      Signature_Keys.Append (+"(");
+      Signature_Keys.Append (+",");
 
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Full);
@@ -114,6 +122,8 @@ procedure LSP_Test is
         (commands => Commands);
 
       Response.result.capabilities.hoverProvider := LSP.Types.Optional_True;
+      Response.result.capabilities.signatureHelpProvider :=
+        (True, (triggerCharacters => Signature_Keys));
    end Initialize_Request;
 
    ---------------------------------------
@@ -279,10 +289,39 @@ procedure LSP_Test is
          when LSP_Documents.Attribute_Designator =>
             Response.result.contents.Append
               (Ada_Wellknown.Attribute_Hover (Lookup.Value));
-         when LSP_Documents.None =>
+         when LSP_Documents.None | LSP_Documents.Pragma_Name =>
             null;
       end case;
    end Text_Document_Hover_Request;
+
+   ------------------------------------------
+   -- Text_Document_Signature_Help_Request --
+   ------------------------------------------
+
+   overriding procedure Text_Document_Signature_Help_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.SignatureHelp_Response)
+   is
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+      Lookup : constant LSP_Documents.Lookup_Result :=
+        Document.Lookup (Value.position);
+   begin
+      case Lookup.Kind is
+         when LSP_Documents.Pragma_Name =>
+            Response.result.signatures.Append
+              (Ada_Wellknown.Pragma_Signatures (Lookup.Name));
+            if not Response.result.signatures.Is_Empty then
+               Response.result.activeParameter := (True, Lookup.Parameter - 1);
+               Response.result.activeSignature := (True, 0);
+            end if;
+         when LSP_Documents.Attribute_Designator =>
+            null;
+         when LSP_Documents.None =>
+            null;
+      end case;
+   end Text_Document_Signature_Help_Request;
 
    ----------------------------------------
    -- Workspace_Did_Change_Configuration --

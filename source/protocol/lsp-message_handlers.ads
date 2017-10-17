@@ -30,6 +30,11 @@ package LSP.Message_Handlers is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Hover_Response) is null;
 
+   not overriding procedure Text_Document_Signature_Help_Request
+    (Self     : access Request_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.SignatureHelp_Response) is null;
+
    not overriding procedure Workspace_Execute_Command_Request
     (Self     : access Request_Handler;
      Value    : LSP.Messages.ExecuteCommandParams;

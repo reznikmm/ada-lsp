@@ -68,7 +68,7 @@ package body LSP.Servers is
          (+"textDocument/completion", Handlers.Do_Completion'Access),
          (+"completionItem/resolve", Handlers.Do_Not_Found'Access),
          (+"textDocument/hover", Handlers.Do_Hover'Access),
-         (+"textDocument/signatureHelp", Handlers.Do_Not_Found'Access),
+         (+"textDocument/signatureHelp", Handlers.Do_Signature_Help'Access),
          (+"textDocument/definition", Handlers.Do_Not_Found'Access),
          (+"textDocument/references", Handlers.Do_Not_Found'Access),
          (+"textDocument/documentHighlight", Handlers.Do_Not_Found'Access),
