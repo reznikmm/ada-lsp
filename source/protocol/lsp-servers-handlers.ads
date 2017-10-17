@@ -60,6 +60,11 @@ private package LSP.Servers.Handlers is
      Handler : not null LSP.Message_Handlers.Request_Handler_Access)
       return LSP.Messages.ResponseMessage'Class;
 
+   function Do_References
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
+
    function Do_Shutdown
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Request_Handler_Access)

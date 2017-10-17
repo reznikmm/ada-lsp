@@ -2843,6 +2843,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out InitializeParams);
 
+   not overriding procedure Read_ReferenceContext
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ReferenceContext);
+
+   not overriding procedure Read_ReferenceParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ReferenceParams);
+
    not overriding procedure Read_synchronization
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out synchronization);
@@ -2989,6 +2997,8 @@ private
    for dynamicRegistration'Read use Read_dynamicRegistration;
    for ExecuteCommandParams'Read use Read_ExecuteCommandParams;
    for InitializeParams'Read use Read_InitializeParams;
+   for ReferenceContext'Read use Read_ReferenceContext;
+   for ReferenceParams'Read use Read_ReferenceParams;
    for synchronization'Read use Read_synchronization;
    for TextDocumentClientCapabilities'Read use Read_TextDocumentClientCapabilities;
    for WorkspaceClientCapabilities'Read use Read_WorkspaceClientCapabilities;

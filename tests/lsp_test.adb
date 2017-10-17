@@ -89,6 +89,11 @@ procedure LSP_Test is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Hover_Response);
 
+   overriding procedure Text_Document_References_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.ReferenceParams;
+     Response : in out LSP.Messages.Location_Response);
+
    overriding procedure Text_Document_Signature_Help_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
@@ -133,6 +138,8 @@ procedure LSP_Test is
       Response.result.capabilities.signatureHelpProvider :=
         (True, (triggerCharacters => Signature_Keys));
       Response.result.capabilities.definitionProvider :=
+        LSP.Types.Optional_True;
+      Response.result.capabilities.referencesProvider :=
         LSP.Types.Optional_True;
    end Initialize_Request;
 
@@ -333,6 +340,31 @@ procedure LSP_Test is
             null;
       end case;
    end Text_Document_Hover_Request;
+
+   --------------------------------------
+   -- Text_Document_References_Request --
+   --------------------------------------
+
+   overriding procedure Text_Document_References_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.ReferenceParams;
+     Response : in out LSP.Messages.Location_Response)
+   is
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+      Lookup : constant LSP_Documents.Lookup_Result :=
+        Document.Lookup (Value.position);
+   begin
+      case Lookup.Kind is
+         when LSP_Documents.Identifier =>
+            Self.XRef.Get_References
+              (Name      => Lookup.Value,
+               With_Decl => Value.context.includeDeclaration,
+               Result    => Response.result);
+         when others =>
+            null;
+      end case;
+   end Text_Document_References_Request;
 
    ------------------------------------------
    -- Text_Document_Signature_Help_Request --

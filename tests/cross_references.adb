@@ -1,6 +1,12 @@
 with Ada.Directories;
 
+with League.Strings;
+
 package body Cross_References is
+
+   function "+" (Text : Wide_Wide_String)
+      return League.Strings.Universal_String renames
+       League.Strings.To_Universal_String;
 
    --------------------
    -- Get_Definition --
@@ -26,6 +32,29 @@ package body Cross_References is
          Found := False;
       end if;
    end Get_Definition;
+
+   --------------------
+   -- Get_References --
+   --------------------
+
+   not overriding procedure Get_References
+     (Self      : Database;
+      Name      : LSP.Types.LSP_String;
+      With_Decl : Boolean;
+      Result    : in out LSP.Messages.Location_Vectors.Vector)
+   is
+      pragma Unreferenced (With_Decl);
+      use type League.Strings.Universal_String;
+      Item : LSP.Messages.Location;
+   begin
+      if Name = +"LSP" then
+         Item.uri := Self.Source & "/lsp.ads";
+         Item.span := ((0, 8), (0, 11));
+         Result.Append (Item);
+         Item.span := ((2, 4), (2, 7));
+         Result.Append (Item);
+      end if;
+   end Get_References;
 
    ----------------
    -- Initialize --

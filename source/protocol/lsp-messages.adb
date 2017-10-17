@@ -772,6 +772,44 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_Position;
 
+   ---------------------------
+   -- Read_ReferenceContext --
+   ---------------------------
+
+   not overriding procedure Read_ReferenceContext
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ReferenceContext)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"includeDeclaration");
+      V.includeDeclaration := JS.Read.To_Boolean;
+      JS.End_Object;
+   end Read_ReferenceContext;
+
+   --------------------------
+   -- Read_ReferenceParams --
+   --------------------------
+
+   not overriding procedure Read_ReferenceParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out ReferenceParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentIdentifier'Read (S, V.textDocument);
+      JS.Key (+"position");
+      Position'Read (S, V.position);
+      JS.Key (+"context");
+      ReferenceContext'Read (S, V.context);
+      JS.End_Object;
+   end Read_ReferenceParams;
+
    ------------------------
    -- Read_ResponseError --
    ------------------------
