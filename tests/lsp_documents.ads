@@ -1,4 +1,5 @@
 with LSP.Types;
+with LSP.Messages;
 
 package LSP_Documents is
 
@@ -15,6 +16,21 @@ package LSP_Documents is
 
    not overriding function Version
      (Self : Document) return LSP.Types.Version_Id;
+
+   type Lookup_Result_Kinds is (None, Attribute_Designator);
+
+   type Lookup_Result (Kind : Lookup_Result_Kinds := None) is record
+      case Kind is
+         when Attribute_Designator =>
+            Value : LSP.Types.LSP_String;
+         when None =>
+            null;
+      end case;
+   end record;
+
+   not overriding function Lookup
+     (Self  : Document;
+      Where : LSP.Messages.Position) return Lookup_Result;
 
 private
 

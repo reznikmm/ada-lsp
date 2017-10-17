@@ -270,14 +270,18 @@ procedure LSP_Test is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Hover_Response)
    is
-      pragma Unreferenced (Self, Value);
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+      Lookup : constant LSP_Documents.Lookup_Result :=
+        Document.Lookup (Value.position);
    begin
-      Response.result.contents.Append
-        ((Is_String => True, value => +"Test **hover**:"));
-      Response.result.contents.Append
-        ((Is_String => False,
-          language => +"ada",
-          value => +"function Aaa (X : Real) return Integer;"));
+      case Lookup.Kind is
+         when LSP_Documents.Attribute_Designator =>
+            Response.result.contents.Append
+              (Ada_Wellknown.Attribute_Hover (Lookup.Value));
+         when LSP_Documents.None =>
+            null;
+      end case;
    end Text_Document_Hover_Request;
 
    ----------------------------------------

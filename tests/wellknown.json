@@ -32,5 +32,20 @@
             "filterText": "base",
             "insertText": "Base"
         }
-    ]
+    ],
+    "Hover":{
+        "access":[
+            "For a prefix prefix X that denotes an object, program unit, or label:",
+            "P'Access yields an access value that designates the subprogram denoted by P. The type of P'Access is an access-to-subprogram type (S), as determined by the expected type. See [3.10.2](http://www.ada-auth.org/standards/rm12_w_tc1/html/RM-3-10-2.html)."
+        ],
+        "adjacent":[
+            "For every subtype S of a floating point type T:",
+            "S'Adjacent denotes a function with the following specification:",
+            {
+                "language": "ada",
+                "value":"\nfunction S'Adjacent (X, Towards : T)\n  return T\n"
+            },
+            "If Towards = X, the function yields X; otherwise, it yields the machine number of the type T adjacent to X in the direction of Towards, if that machine number exists. If the result would be outside the base range of S, Constraint_Error is raised. When T'Signed_Zeros is True, a zero result has the sign of X. When Towards is zero, its sign has no bearing on the result. See [A.5.3](http://www.ada-auth.org/standards/rm12_w_tc1/html/RM-A-5-3.html)."
+        ]
+    }
 }

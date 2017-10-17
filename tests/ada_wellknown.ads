@@ -1,9 +1,14 @@
 with LSP.Messages;
+with LSP.Types;
 
 package Ada_Wellknown is
 
    procedure Initialize;
 
    function Attributes return LSP.Messages.CompletionItem_Vectors.Vector;
+
+   function Attribute_Hover
+     (Name : LSP.Types.LSP_String)
+      return LSP.Messages.MarkedString_Vectors.Vector;
 
 end Ada_Wellknown;
