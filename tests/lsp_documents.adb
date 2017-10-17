@@ -45,14 +45,17 @@ package body LSP_Documents is
       type State_Kinds is (Other, Character, Identifier, Tick);
       Text      : constant LSP.Types.LSP_String := Self.Get_Line (Where.line);
       State     : State_Kinds := Other;
+      Prev      : State_Kinds := Other;
       Attr      : Boolean := False;
       Id_First  : Natural := 0;
       Id_Last   : Natural := 0;
       Is_Pragma : Boolean := False;
       Pragma_Id : League.Strings.Universal_String;
-      Param     : Natural := 1;
+      Param     : Natural := 0;
    begin
       for J in 1 .. Text.Length loop
+         Prev := State;
+
          case State is
             when Other =>
                if Text (J).To_Wide_Wide_Character = ''' then
@@ -71,7 +74,10 @@ package body LSP_Documents is
                if Text (J).To_Wide_Wide_Character = ''' then
                   State := Tick;
                   Id_Last := J - 1;
-               elsif not (Text (J).Is_ID_Start or Text (J).Is_ID_Continue) then
+               elsif not (Text (J).Is_ID_Start
+                          or Text (J).Is_ID_Continue
+                          or Text (J).To_Wide_Wide_Character = '.')
+               then
                   State := Other;
                   Id_Last := J - 1;
 
@@ -80,7 +86,7 @@ package body LSP_Documents is
                   elsif Is_Pragma then
                      Pragma_Id := Text.Slice (Id_First, Id_Last);
                      Is_Pragma := False;
-                     Param := 1;
+                     Param := 0;
                   end if;
                end if;
             when Tick =>
@@ -93,7 +99,7 @@ package body LSP_Documents is
 
          if Text (J).To_Wide_Wide_Character = ';' then
             Is_Pragma := False;
-         elsif Text (J).To_Wide_Wide_Character = ',' then
+         elsif Text (J).To_Wide_Wide_Character in '(' | ',' then
             Param := Param + 1;
          end if;
 
@@ -105,6 +111,8 @@ package body LSP_Documents is
          return (Attribute_Designator, Text.Slice (Id_First, Id_Last));
       elsif not Pragma_Id.Is_Empty then
          return (Pragma_Name, Pragma_Id, Param);
+      elsif Prev = Identifier then
+         return (LSP_Documents.Identifier, Text.Slice (Id_First, Id_Last));
       else
          return (Kind => None);
       end if;

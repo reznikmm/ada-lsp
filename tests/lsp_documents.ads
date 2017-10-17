@@ -17,11 +17,15 @@ package LSP_Documents is
    not overriding function Version
      (Self : Document) return LSP.Types.Version_Id;
 
-   type Lookup_Result_Kinds is (None, Attribute_Designator, Pragma_Name);
+   type Lookup_Result_Kinds is
+     (None,
+      Attribute_Designator,
+      Pragma_Name,
+      Identifier);
 
    type Lookup_Result (Kind : Lookup_Result_Kinds := None) is record
       case Kind is
-         when Attribute_Designator =>
+         when Attribute_Designator | Identifier =>
             Value : LSP.Types.LSP_String;
          when Pragma_Name =>
             Name      : LSP.Types.LSP_String;
