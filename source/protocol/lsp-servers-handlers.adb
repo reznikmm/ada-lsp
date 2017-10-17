@@ -91,14 +91,15 @@ package body LSP.Servers.Handlers is
       return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.CodeActionParams;
-      Response : LSP.Messages.CodeAction_Response;
    begin
       LSP.Messages.CodeActionParams'Read (Stream, Params);
-      Handler.Text_Document_Code_Action_Request
-        (Response => Response,
-         Value    => Params);
 
-      return Response;
+      return Response : LSP.Messages.CodeAction_Response do
+
+         Handler.Text_Document_Code_Action_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
    end Do_Code_Action;
 
    -------------------
@@ -111,14 +112,15 @@ package body LSP.Servers.Handlers is
       return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.TextDocumentPositionParams;
-      Response : LSP.Messages.Completion_Response;
    begin
       LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
-      Handler.Text_Document_Completion_Request
-        (Response => Response,
-         Value    => Params);
 
-      return Response;
+      return Response : LSP.Messages.Completion_Response do
+
+         Handler.Text_Document_Completion_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
    end Do_Completion;
 
    ------------------------
@@ -131,14 +133,15 @@ package body LSP.Servers.Handlers is
       return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.ExecuteCommandParams;
-      Response : LSP.Messages.ExecuteCommand_Response;
    begin
       LSP.Messages.ExecuteCommandParams'Read (Stream, Params);
-      Handler.Workspace_Execute_Command_Request
-        (Response => Response,
-         Value    => Params);
 
-      return Response;
+      return Response : LSP.Messages.ExecuteCommand_Response do
+
+         Handler.Workspace_Execute_Command_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
    end Do_Execute_Command;
 
    -------------
@@ -164,14 +167,15 @@ package body LSP.Servers.Handlers is
       return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.TextDocumentPositionParams;
-      Response : LSP.Messages.Hover_Response;
    begin
       LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
-      Handler.Text_Document_Hover_Request
-        (Response => Response,
-         Value    => Params);
 
-      return Response;
+      return Response : LSP.Messages.Hover_Response do
+
+         Handler.Text_Document_Hover_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
    end Do_Hover;
 
    -------------------
@@ -184,14 +188,15 @@ package body LSP.Servers.Handlers is
        return LSP.Messages.ResponseMessage'Class
    is
       Params   : LSP.Messages.InitializeParams;
-      Response : LSP.Messages.Initialize_Response;
    begin
       LSP.Messages.InitializeParams'Read (Stream, Params);
-      Handler.Initialize_Request
-        (Response => Response,
-         Value    => Params);
 
-      return Response;
+      return Response : LSP.Messages.Initialize_Response do
+
+         Handler.Initialize_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
    end Do_Initialize;
 
    ------------------
@@ -225,11 +230,11 @@ package body LSP.Servers.Handlers is
       return LSP.Messages.ResponseMessage'Class
    is
       pragma Unreferenced (Stream);
-      Response : LSP.Messages.ResponseMessage;
    begin
-      Handler.Shutdown_Request (Response);
+      return Response : LSP.Messages.ResponseMessage do
 
-      return Response;
+         Handler.Shutdown_Request (Response);
+      end return;
    end Do_Shutdown;
 
    -------------------------
