@@ -1136,6 +1136,53 @@ package body LSP.Messages is
       JS.End_Object;
    end Write_ExecuteCommandOptions;
 
+   -----------------
+   -- Write_Hover --
+   -----------------
+
+   not overriding procedure Write_Hover
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Hover)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"contents");
+
+      if V.contents.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V.contents loop
+            MarkedString'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+
+      JS.Key (+"range");
+      Optional_Span'Write (S, V.Span);
+      JS.End_Object;
+   end Write_Hover;
+
+   --------------------------
+   -- Write_Hover_Response --
+   --------------------------
+
+   not overriding procedure Write_Hover_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Hover_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      Hover'Write (S, V.result);
+      JS.End_Object;
+   end Write_Hover_Response;
+
    -------------------------------
    -- Write_Initialize_Response --
    -------------------------------
@@ -1187,6 +1234,27 @@ package body LSP.Messages is
            (League.Holders.Universal_Integer
                 (InsertTextFormat'Pos (V)) + 1));
    end Write_InsertTextFormat;
+
+   ------------------------
+   -- Write_MarkedString --
+   ------------------------
+
+   not overriding procedure Write_MarkedString
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : MarkedString)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      if V.Is_String then
+         JS.Write (League.JSON.Values.To_JSON_Value (V.value));
+      else
+         JS.Start_Object;
+         Write_String (JS, +"language", V.language);
+         Write_String (JS, +"value", V.value);
+         JS.End_Object;
+      end if;
+   end Write_MarkedString;
 
    ------------------
    -- Write_Number --

@@ -77,6 +77,11 @@ procedure LSP_Test is
      Value    : LSP.Messages.CodeActionParams;
      Response : in out LSP.Messages.CodeAction_Response);
 
+   overriding procedure Text_Document_Hover_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Hover_Response);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -107,6 +112,8 @@ procedure LSP_Test is
 
       Response.result.capabilities.executeCommandProvider :=
         (commands => Commands);
+
+      Response.result.capabilities.hoverProvider := LSP.Types.Optional_True;
    end Initialize_Request;
 
    ---------------------------------------
@@ -253,6 +260,25 @@ procedure LSP_Test is
    begin
       Self.Server.Stop;
    end Exit_Notification;
+
+   ---------------------------------
+   -- Text_Document_Hover_Request --
+   ---------------------------------
+
+   overriding procedure Text_Document_Hover_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Hover_Response)
+   is
+      pragma Unreferenced (Self, Value);
+   begin
+      Response.result.contents.Append
+        ((Is_String => True, value => +"Test **hover**:"));
+      Response.result.contents.Append
+        ((Is_String => False,
+          language => +"ada",
+          value => +"function Aaa (X : Real) return Integer;"));
+   end Text_Document_Hover_Request;
 
    ----------------------------------------
    -- Workspace_Did_Change_Configuration --

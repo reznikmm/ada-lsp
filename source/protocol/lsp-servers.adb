@@ -67,7 +67,7 @@ package body LSP.Servers is
          (+"textDocument/willSaveWaitUntil", Handlers.Do_Not_Found'Access),
          (+"textDocument/completion", Handlers.Do_Completion'Access),
          (+"completionItem/resolve", Handlers.Do_Not_Found'Access),
-         (+"textDocument/hover", Handlers.Do_Not_Found'Access),
+         (+"textDocument/hover", Handlers.Do_Hover'Access),
          (+"textDocument/signatureHelp", Handlers.Do_Not_Found'Access),
          (+"textDocument/definition", Handlers.Do_Not_Found'Access),
          (+"textDocument/references", Handlers.Do_Not_Found'Access),

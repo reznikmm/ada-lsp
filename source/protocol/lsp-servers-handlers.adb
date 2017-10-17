@@ -154,6 +154,26 @@ package body LSP.Servers.Handlers is
       Handler.Exit_Notification;
    end Do_Exit;
 
+   --------------
+   -- Do_Hover --
+   --------------
+
+   function Do_Hover
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.TextDocumentPositionParams;
+      Response : LSP.Messages.Hover_Response;
+   begin
+      LSP.Messages.TextDocumentPositionParams'Read (Stream, Params);
+      Handler.Text_Document_Hover_Request
+        (Response => Response,
+         Value    => Params);
+
+      return Response;
+   end Do_Hover;
+
    -------------------
    -- Do_Initialize --
    -------------------

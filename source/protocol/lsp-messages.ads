@@ -2136,6 +2136,22 @@ package LSP.Messages is
    -- */
    --type MarkedString = string | { language: string; value: string };
    --```
+   type MarkedString (Is_String : Boolean := True) is record
+      value : LSP_String;
+
+      case Is_String is
+         when True =>
+            null;
+         when False =>
+            language : LSP_String;
+      end case;
+   end record;
+
+   not overriding procedure Write_MarkedString
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : MarkedString);
+   for MarkedString'Write use Write_MarkedString;
+
    package MarkedString_Vectors is new Ada.Containers.Vectors
      (Positive, MarkedString);
 
@@ -2158,7 +2174,11 @@ package LSP.Messages is
    --```
    type Hover is record
       contents: MarkedString_Vectors.Vector;
-      Span: LSP.Messages.Span;  --  Optional ???
+      Span: Optional_Span;
+   end record;
+
+   type Hover_Response is new ResponseMessage with record
+      result: Hover;
    end record;
 
    --```typescript
@@ -2853,6 +2873,14 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ExecuteCommandOptions);
 
+   not overriding procedure Write_Hover
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Hover);
+
+   not overriding procedure Write_Hover_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Hover_Response);
+
    not overriding procedure Write_Initialize_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Initialize_Response);
@@ -2895,6 +2923,8 @@ private
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
+   for Hover'Write use Write_Hover;
+   for Hover_Response'Write use Write_Hover_Response;
    for Initialize_Response'Write use Write_Initialize_Response;
    for InitializeResult'Write use Write_InitializeResult;
    for Optional_TextDocumentSyncOptions'Write use Write_Optional_TextDocumentSyncOptions;

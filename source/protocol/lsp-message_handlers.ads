@@ -15,15 +15,20 @@ package LSP.Message_Handlers is
     (Self     : access Request_Handler;
      Response : in out LSP.Messages.ResponseMessage) is null;
 
+   not overriding procedure Text_Document_Code_Action_Request
+    (Self     : access Request_Handler;
+     Value    : LSP.Messages.CodeActionParams;
+     Response : in out LSP.Messages.CodeAction_Response) is null;
+
    not overriding procedure Text_Document_Completion_Request
     (Self     : access Request_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Completion_Response) is null;
 
-   not overriding procedure Text_Document_Code_Action_Request
+   not overriding procedure Text_Document_Hover_Request
     (Self     : access Request_Handler;
-     Value    : LSP.Messages.CodeActionParams;
-     Response : in out LSP.Messages.CodeAction_Response) is null;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Hover_Response) is null;
 
    not overriding procedure Workspace_Execute_Command_Request
     (Self     : access Request_Handler;

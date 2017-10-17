@@ -44,17 +44,6 @@ package LSP.Types is
    Optional_False : constant Optional_Boolean := (True, False);
    Optional_True  : constant Optional_Boolean := (True, True);
 
-   type MarkedString (Is_String : Boolean := True) is record
-      value : LSP_String;
-
-      case Is_String is
-         when True =>
-            null;
-         when False =>
-            language : LSP_String;
-      end case;
-   end record;
-
    subtype MessageActionItem_Vector is
      League.String_Vectors.Universal_String_Vector;
 
