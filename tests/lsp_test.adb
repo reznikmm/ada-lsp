@@ -70,15 +70,6 @@ procedure LSP_Test is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Completion_Response);
 
-   overriding procedure Workspace_Did_Change_Configuration
-    (Self     : access Message_Handler;
-     Value    : LSP.Messages.DidChangeConfigurationParams);
-
-   overriding procedure Workspace_Execute_Command_Request
-    (Self     : access Message_Handler;
-     Value    : LSP.Messages.ExecuteCommandParams;
-     Response : in out LSP.Messages.ExecuteCommand_Response);
-
    overriding procedure Text_Document_Code_Action_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.CodeActionParams;
@@ -102,6 +93,20 @@ procedure LSP_Test is
    overriding procedure Text_Document_Symbol_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.DocumentSymbolParams;
+     Response : in out LSP.Messages.Symbol_Response);
+
+   overriding procedure Workspace_Did_Change_Configuration
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DidChangeConfigurationParams);
+
+   overriding procedure Workspace_Execute_Command_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.ExecuteCommandParams;
+     Response : in out LSP.Messages.ExecuteCommand_Response);
+
+   overriding procedure Workspace_Symbol_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.WorkspaceSymbolParams;
      Response : in out LSP.Messages.Symbol_Response);
 
    ------------------------
@@ -147,6 +152,8 @@ procedure LSP_Test is
       Response.result.capabilities.referencesProvider :=
         LSP.Types.Optional_True;
       Response.result.capabilities.documentSymbolProvider :=
+        LSP.Types.Optional_True;
+      Response.result.capabilities.workspaceSymbolProvider :=
         LSP.Types.Optional_True;
    end Initialize_Request;
 
@@ -469,6 +476,20 @@ procedure LSP_Test is
          end;
       end if;
    end Workspace_Execute_Command_Request;
+
+   ------------------------------
+   -- Workspace_Symbol_Request --
+   ------------------------------
+
+   overriding procedure Workspace_Symbol_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.WorkspaceSymbolParams;
+     Response : in out LSP.Messages.Symbol_Response) is
+   begin
+      for Document of Self.Documents loop
+         Response.result.Append (Document.All_Symbols (Value.query));
+      end loop;
+   end Workspace_Symbol_Request;
 
    Server  : aliased LSP.Servers.Server;
    Handler : aliased Message_Handler (Server'Access);
