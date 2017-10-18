@@ -322,6 +322,27 @@ package body LSP.Servers.Handlers is
    end Do_Signature_Help;
 
    -------------------------
+   -- Do_Workspace_Symbol --
+   -------------------------
+
+   function Do_Workspace_Symbol
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.WorkspaceSymbolParams;
+   begin
+      LSP.Messages.WorkspaceSymbolParams'Read (Stream, Params);
+
+      return Response : LSP.Messages.Symbol_Response do
+
+         Handler.Workspace_Symbol_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
+   end Do_Workspace_Symbol;
+
+   -------------------------
    -- Ignore_Notification --
    -------------------------
 

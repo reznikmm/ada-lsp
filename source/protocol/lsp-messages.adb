@@ -876,6 +876,22 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_Span;
 
+   --------------------------------
+   -- Read_WorkspaceSymbolParams --
+   --------------------------------
+
+   not overriding procedure Read_WorkspaceSymbolParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out WorkspaceSymbolParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Read_String (JS, +"query", V.query);
+      JS.End_Object;
+   end Read_WorkspaceSymbolParams;
+
    ---------------------------
    -- Write_CodeLensOptions --
    ---------------------------

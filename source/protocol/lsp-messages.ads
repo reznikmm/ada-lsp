@@ -2886,6 +2886,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out WorkspaceClientCapabilities);
 
+   not overriding procedure Read_WorkspaceSymbolParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out WorkspaceSymbolParams);
+
    not overriding procedure Write_ApplyWorkspaceEdit_Request
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ApplyWorkspaceEdit_Request);
@@ -3032,5 +3036,6 @@ private
    for synchronization'Read use Read_synchronization;
    for TextDocumentClientCapabilities'Read use Read_TextDocumentClientCapabilities;
    for WorkspaceClientCapabilities'Read use Read_WorkspaceClientCapabilities;
+   for WorkspaceSymbolParams'Read use Read_WorkspaceSymbolParams;
 
 end LSP.Messages;
