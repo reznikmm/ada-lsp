@@ -6,3 +6,5 @@ clean:
 
 vscode:
 	cd integration/vscode/ada; npm install
+	@echo Now run:
+	@echo code --extensionDevelopmentPath=`pwd`/integration/vscode/ada/ `pwd`

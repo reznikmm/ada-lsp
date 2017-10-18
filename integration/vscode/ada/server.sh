@@ -1,2 +1,3 @@
 #!/bin/bash
-tee /tmp/in.log | /home/max/net/ada-lsp/.obj/protocol/lsp_test | tee /tmp/out.log
+ROOT=`dirname $0`/../../..
+tee /tmp/in.log | $ROOT/.obj/protocol/lsp_test | tee /tmp/out.log

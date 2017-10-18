@@ -1,3 +1,4 @@
 {
-    "ada.project_file": "gnat/lsp_protocol.gpr"
+    "ada.project_file": "gnat/lsp_protocol.gpr",
+    "ada.trace.server": "verbose"
 }
