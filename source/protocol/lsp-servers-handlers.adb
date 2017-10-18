@@ -157,7 +157,7 @@ package body LSP.Servers.Handlers is
    begin
       LSP.Messages.DocumentSymbolParams'Read (Stream, Params);
 
-      return Response : LSP.Messages.DocumentSymbol_Response do
+      return Response : LSP.Messages.Symbol_Response do
 
          Handler.Text_Document_Symbol_Request
            (Response => Response,

@@ -1157,24 +1157,6 @@ package body LSP.Messages is
    end Write_DocumentOnTypeFormattingOptions;
 
    -----------------------------------
-   -- Write_DocumentSymbol_Response --
-   -----------------------------------
-
-   not overriding procedure Write_DocumentSymbol_Response
-     (S : access Ada.Streams.Root_Stream_Type'Class;
-      V : DocumentSymbol_Response)
-   is
-      JS : League.JSON.Streams.JSON_Stream'Class renames
-        League.JSON.Streams.JSON_Stream'Class (S.all);
-   begin
-      JS.Start_Object;
-      Write_Response_Prexif (S, V);
-      JS.Key (+"result");
-      SymbolInformation_Vector'Write (S, V.result);
-      JS.End_Object;
-   end Write_DocumentSymbol_Response;
-
-   -----------------------------------
    -- Write_ExecuteCommand_Response --
    -----------------------------------
 
@@ -1797,6 +1779,24 @@ package body LSP.Messages is
 
       Stream.End_Array;
    end Write_String_Vector;
+
+   ---------------------------
+   -- Write_Symbol_Response --
+   ---------------------------
+
+   not overriding procedure Write_Symbol_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Symbol_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      SymbolInformation_Vector'Write (S, V.result);
+      JS.End_Object;
+   end Write_Symbol_Response;
 
    -----------------------------
    -- Write_SymbolInformation --

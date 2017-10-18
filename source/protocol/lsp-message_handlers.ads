@@ -48,7 +48,7 @@ package LSP.Message_Handlers is
    not overriding procedure Text_Document_Symbol_Request
     (Self     : access Request_Handler;
      Value    : LSP.Messages.DocumentSymbolParams;
-     Response : in out LSP.Messages.DocumentSymbol_Response) is null;
+     Response : in out LSP.Messages.Symbol_Response) is null;
 
    not overriding procedure Workspace_Execute_Command_Request
     (Self     : access Request_Handler;

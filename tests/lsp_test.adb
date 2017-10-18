@@ -102,7 +102,7 @@ procedure LSP_Test is
    overriding procedure Text_Document_Symbol_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.DocumentSymbolParams;
-     Response : in out LSP.Messages.DocumentSymbol_Response);
+     Response : in out LSP.Messages.Symbol_Response);
 
    ------------------------
    -- Initialize_Request --
@@ -415,7 +415,7 @@ procedure LSP_Test is
    overriding procedure Text_Document_Symbol_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.DocumentSymbolParams;
-     Response : in out LSP.Messages.DocumentSymbol_Response)
+     Response : in out LSP.Messages.Symbol_Response)
    is
       Document : LSP_Documents.Document renames
         Self.Documents (Value.textDocument.uri);
