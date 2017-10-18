@@ -7,6 +7,7 @@ package LSP_Documents is
 
    not overriding procedure Initalize
      (Self    : out Document;
+      Uri     : LSP.Types.LSP_String;
       Text    : LSP.Types.LSP_String;
       Version : LSP.Types.Version_Id);
 
@@ -39,9 +40,15 @@ package LSP_Documents is
      (Self  : Document;
       Where : LSP.Messages.Position) return Lookup_Result;
 
+   not overriding function All_Symbols
+     (Self  : Document;
+      Query : LSP.Types.LSP_String)
+        return LSP.Messages.SymbolInformation_Vector;
+
 private
 
    type Document is tagged record
+      Uri     : LSP.Types.LSP_String;
       Lines   : LSP.Types.LSP_String_Vector;
       Version : LSP.Types.Version_Id;
    end record;

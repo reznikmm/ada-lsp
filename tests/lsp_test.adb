@@ -99,6 +99,11 @@ procedure LSP_Test is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.SignatureHelp_Response);
 
+   overriding procedure Text_Document_Symbol_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DocumentSymbolParams;
+     Response : in out LSP.Messages.DocumentSymbol_Response);
+
    ------------------------
    -- Initialize_Request --
    ------------------------
@@ -140,6 +145,8 @@ procedure LSP_Test is
       Response.result.capabilities.definitionProvider :=
         LSP.Types.Optional_True;
       Response.result.capabilities.referencesProvider :=
+        LSP.Types.Optional_True;
+      Response.result.capabilities.documentSymbolProvider :=
         LSP.Types.Optional_True;
    end Initialize_Request;
 
@@ -256,7 +263,8 @@ procedure LSP_Test is
       Document : LSP_Documents.Document;
    begin
       Document.Initalize
-        (Value.contentChanges.Last_Element.text,
+        (Value.textDocument.uri,
+         Value.contentChanges.Last_Element.text,
          Value.textDocument.version);
       Self.Documents.Replace (Value.textDocument.uri, Document);
    end Text_Document_Did_Change;
@@ -283,7 +291,8 @@ procedure LSP_Test is
       Document : LSP_Documents.Document;
    begin
       Document.Initalize
-        (Value.textDocument.text,
+        (Value.textDocument.uri,
+         Value.textDocument.text,
          Value.textDocument.version);
       Self.Documents.Include (Value.textDocument.uri, Document);
    end Text_Document_Did_Open;
@@ -398,6 +407,21 @@ procedure LSP_Test is
             null;
       end case;
    end Text_Document_Signature_Help_Request;
+
+   ----------------------------------
+   -- Text_Document_Symbol_Request --
+   ----------------------------------
+
+   overriding procedure Text_Document_Symbol_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DocumentSymbolParams;
+     Response : in out LSP.Messages.DocumentSymbol_Response)
+   is
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+   begin
+      Response.result.Append (Document.All_Symbols (+""));
+   end Text_Document_Symbol_Request;
 
    ----------------------------------------
    -- Workspace_Did_Change_Configuration --

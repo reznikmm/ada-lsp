@@ -1,5 +1,6 @@
 with Ada.Characters.Wide_Wide_Latin_1;
 
+with League.String_Vectors;
 with League.Strings;
 
 package body LSP_Documents is
@@ -19,15 +20,62 @@ package body LSP_Documents is
       return Self.Lines.Element (Natural (Line) + 1);
    end Get_Line;
 
+   -----------------
+   -- All_Symbols --
+   -----------------
+
+   not overriding function All_Symbols
+     (Self  : Document;
+      Query : LSP.Types.LSP_String)
+        return LSP.Messages.SymbolInformation_Vector
+   is
+      use type League.Strings.Universal_String;
+      Result : LSP.Messages.SymbolInformation_Vector;
+      Item   : LSP.Messages.SymbolInformation;
+   begin
+      for J in 1 .. Self.Lines.Length loop
+         declare
+            Line : constant League.Strings.Universal_String := Self.Lines (J);
+            List : constant League.String_Vectors.Universal_String_Vector :=
+              Line.Split (' ', League.Strings.Skip_Empty);
+            LN   : constant LSP.Types.Line_Number :=
+              LSP.Types.Line_Number (J - 1);
+         begin
+            if List.Length > 2
+              and then List (1) = +"type"
+              and then (Query.Is_Empty or else List (2).Index (Query) > 0)
+            then
+               Item :=
+                 (name => List (2),
+                  kind => LSP.Messages.Class,
+                  location =>
+                    (Self.Uri,
+                     (first => (LN, LSP.Types.UTF_16_Index
+                                      (Line.Index (List (2)) - 1)),
+                      last  => (LN, LSP.Types.UTF_16_Index
+                                      (Line.Index (List (2))
+                                        + List (2).Length - 1)))),
+                 containerName => (Is_Set => False));
+
+               Result.Append (Item);
+            end if;
+         end;
+      end loop;
+
+      return Result;
+   end All_Symbols;
+
    ---------------
    -- Initalize --
    ---------------
 
    procedure Initalize
      (Self    : out Document;
+      Uri     : LSP.Types.LSP_String;
       Text    : LSP.Types.LSP_String;
       Version : LSP.Types.Version_Id) is
    begin
+      Self.Uri := Uri;
       Self.Lines := Text.Split (Ada.Characters.Wide_Wide_Latin_1.LF);
       Self.Version := Version;
    end Initalize;
