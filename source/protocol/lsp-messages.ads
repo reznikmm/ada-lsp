@@ -2471,6 +2471,21 @@ package LSP.Messages is
       containerName: Optional_String;
    end record;
 
+   not overriding procedure Write_SymbolInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SymbolInformation);
+   for SymbolInformation'Write use Write_SymbolInformation;
+
+   package SymbolInformation_Vectors is new Ada.Containers.Vectors
+     (Positive, SymbolInformation);
+
+   type SymbolInformation_Vector is
+     new SymbolInformation_Vectors.Vector with null record;
+
+   type DocumentSymbol_Response is new ResponseMessage with record
+      result: SymbolInformation_Vector;
+   end record;
+
    --```typescript
    --/**
    -- * The parameters of a Workspace Symbol Request.
@@ -2831,6 +2846,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out DidSaveTextDocumentParams);
 
+   not overriding procedure Read_DocumentSymbolParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DocumentSymbolParams);
+
    not overriding procedure Read_dynamicRegistration
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : out dynamicRegistration);
@@ -2899,6 +2918,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : DocumentLinkOptions);
 
+   not overriding procedure Write_DocumentSymbol_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentSymbol_Response);
+
    not overriding procedure Write_ExecuteCommand_Response
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ExecuteCommand_Response);
@@ -2951,6 +2974,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : SignatureHelp_Response);
 
+   not overriding procedure Write_SymbolInformation_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SymbolInformation_Vector);
+
    not overriding procedure Write_TextDocumentSyncOptions
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : TextDocumentSyncOptions);
@@ -2967,6 +2994,7 @@ private
    for CompletionList'Write use Write_CompletionList;
    for Diagnostic_Vector'Write use Write_Diagnostic_Vector;
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
+   for DocumentSymbol_Response'Write use Write_DocumentSymbol_Response;
    for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
    for Hover'Write use Write_Hover;
@@ -2980,6 +3008,7 @@ private
    for ServerCapabilities'Write use Write_ServerCapabilities;
    for SignatureHelp'Write use Write_SignatureHelp;
    for SignatureHelp_Response'Write use Write_SignatureHelp_Response;
+   for SymbolInformation_Vector'Write use Write_SymbolInformation_Vector;
    for TextDocumentItem'Read use Read_TextDocumentItem;
    for TextDocumentSyncOptions'Write use Write_TextDocumentSyncOptions;
    for WorkspaceEdit'Write use Write_WorkspaceEdit;
@@ -2994,6 +3023,7 @@ private
    for DidCloseTextDocumentParams'Read use Read_DidCloseTextDocumentParams;
    for DidOpenTextDocumentParams'Read use Read_DidOpenTextDocumentParams;
    for DidSaveTextDocumentParams'Read use Read_DidSaveTextDocumentParams;
+   for DocumentSymbolParams'Read use Read_DocumentSymbolParams;
    for dynamicRegistration'Read use Read_dynamicRegistration;
    for ExecuteCommandParams'Read use Read_ExecuteCommandParams;
    for InitializeParams'Read use Read_InitializeParams;

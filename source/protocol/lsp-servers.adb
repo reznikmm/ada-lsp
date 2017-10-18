@@ -72,7 +72,7 @@ package body LSP.Servers is
          (+"textDocument/definition", Handlers.Do_Definition'Access),
          (+"textDocument/references", Handlers.Do_References'Access),
          (+"textDocument/documentHighlight", Handlers.Do_Not_Found'Access),
-         (+"textDocument/documentSymbol", Handlers.Do_Not_Found'Access),
+         (+"textDocument/documentSymbol", Handlers.Do_Document_Symbol'Access),
          (+"workspace/symbol", Handlers.Do_Not_Found'Access),
          (+"textDocument/codeAction", Handlers.Do_Code_Action'Access),
          (+"textDocument/codeLens", Handlers.Do_Not_Found'Access),

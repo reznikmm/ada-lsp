@@ -343,6 +343,23 @@ package body LSP.Messages is
       JS.End_Object;
    end Read_DidSaveTextDocumentParams;
 
+   -------------------------------
+   -- Read_DocumentSymbolParams --
+   -------------------------------
+
+   not overriding procedure Read_DocumentSymbolParams
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : out DocumentSymbolParams)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"textDocument");
+      TextDocumentIdentifier'Read (S, V.textDocument);
+      JS.End_Object;
+   end Read_DocumentSymbolParams;
+
    ---------------------------
    -- Read_TextDocumentEdit --
    ---------------------------
@@ -1140,6 +1157,24 @@ package body LSP.Messages is
    end Write_DocumentOnTypeFormattingOptions;
 
    -----------------------------------
+   -- Write_DocumentSymbol_Response --
+   -----------------------------------
+
+   not overriding procedure Write_DocumentSymbol_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentSymbol_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+      SymbolInformation_Vector'Write (S, V.result);
+      JS.End_Object;
+   end Write_DocumentSymbol_Response;
+
+   -----------------------------------
    -- Write_ExecuteCommand_Response --
    -----------------------------------
 
@@ -1762,6 +1797,54 @@ package body LSP.Messages is
 
       Stream.End_Array;
    end Write_String_Vector;
+
+   -----------------------------
+   -- Write_SymbolInformation --
+   -----------------------------
+
+   not overriding procedure Write_SymbolInformation
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SymbolInformation)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_String (JS, +"name", V.name);
+      JS.Key (+"kind");
+      JS.Write
+        (League.JSON.Values.To_JSON_Value
+           (League.Holders.Universal_Integer
+                (SymbolKind'Pos (V.kind)) + 1));
+
+      JS.Key (+"location");
+      Location'Write (S, V.location);
+      JS.Key (+"edits");
+      Write_Optional_String (JS, +"containerName", V.containerName);
+      JS.End_Object;
+   end Write_SymbolInformation;
+
+   ------------------------------------
+   -- Write_SymbolInformation_Vector --
+   ------------------------------------
+
+   not overriding procedure Write_SymbolInformation_Vector
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : SymbolInformation_Vector)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      if V.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V loop
+            SymbolInformation'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+   end Write_SymbolInformation_Vector;
 
    ----------------------------
    -- Write_TextDocumentEdit --

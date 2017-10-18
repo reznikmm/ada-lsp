@@ -145,6 +145,27 @@ package body LSP.Servers.Handlers is
    end Do_Definition;
 
    ------------------------
+   -- Do_Document_Symbol --
+   ------------------------
+
+   function Do_Document_Symbol
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class
+   is
+      Params   : LSP.Messages.DocumentSymbolParams;
+   begin
+      LSP.Messages.DocumentSymbolParams'Read (Stream, Params);
+
+      return Response : LSP.Messages.DocumentSymbol_Response do
+
+         Handler.Text_Document_Symbol_Request
+           (Response => Response,
+            Value    => Params);
+      end return;
+   end Do_Document_Symbol;
+
+   ------------------------
    -- Do_Execute_Command --
    ------------------------
 
