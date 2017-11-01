@@ -27,9 +27,13 @@ make
 ### Dependencies
 
 The dependency is
- * [Matreshka](https://github.com/reznikmm/matreshka) - latest trunk,
-(at least 2017-10-13). AMF isn't requred/used.
-See [Installation guide](http://forge.ada-ru.org/matreshka/wiki/Guide)
+* [Matreshka](https://github.com/reznikmm/matreshka) - latest trunk,
+  (at least 2017-10-13). AMF isn't requred/used.
+  See [Installation guide](http://forge.ada-ru.org/matreshka/wiki/Guide)
+
+* [Ada Pretty Printer](https://github.com/reznikmm/ada-pretty) library.
+* [Anagram](https://github.com/reznikmm/anagram) - parser generation Ada
+  library .
 
 * [Node.js](https://nodejs.org) - to prepare VS Code extension
 * [VS Code](https://code.visualstudio.com) - to test the protocol binding

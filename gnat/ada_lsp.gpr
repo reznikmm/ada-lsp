@@ -1,0 +1,25 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
+with "increment";
+with "lsp_protocol";
+
+project Ada_LSP is
+
+   for Source_Dirs use ("../source/server", "../source/generated");
+   for Object_Dir use "../.obj/";
+   for Main use ("ada_lsp-driver");
+
+   package Compiler is
+      for Switches ("ada") use ("-g", "-gnatwa", "-gnatyy", "-gnatwe");
+   end Compiler;
+
+   package Binder is
+      for Switches ("ada") use ("-E");
+   end Binder;
+
+end Ada_LSP;
+

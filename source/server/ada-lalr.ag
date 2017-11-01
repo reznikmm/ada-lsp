@@ -1,0 +1,152 @@
+Token arrow_token;
+Token double_dot_token;
+Token double_star_token;
+Token assignment_token;
+Token inequality_token;
+Token greater_or_equal_token;
+Token less_or_equal_token;
+Token left_label_token;
+Token right_label_token;
+Token box_token;
+Token ampersand_token;
+Token apostrophe_token;
+Token left_parenthesis_token;
+Token right_parenthesis_token;
+Token star_token;
+Token plus_token;
+Token comma_token;
+Token hyphen_token;
+Token dot_token;
+Token slash_token;
+Token colon_token;
+Token semicolon_token;
+Token less_token;
+Token equal_token;
+Token greater_token;
+Token vertical_line_token;
+
+Token identifier_token;
+Token numeric_literal_token;
+Token character_literal_token;
+Token string_literal_token;
+Token comment_token;
+Token space_token;
+Token new_line_token;
+Token error_token;
+
+Token abort_token;
+Token abs_token;
+Token abstract_token;
+Token accept_token;
+Token access_token;
+Token aliased_token;
+Token all_token;
+Token and_token;
+Token array_token;
+Token at_token;
+Token begin_token;
+Token body_token;
+Token case_token;
+Token constant_token;
+Token declare_token;
+Token delay_token;
+Token delta_token;
+Token digits_token;
+Token do_token;
+Token else_token;
+Token elsif_token;
+Token end_token;
+Token entry_token;
+Token exception_token;
+Token exit_token;
+Token for_token;
+Token function_token;
+Token generic_token;
+Token goto_token;
+Token if_token;
+Token in_token;
+Token interface_token;
+Token is_token;
+Token limited_token;
+Token loop_token;
+Token mod_token;
+Token new_token;
+Token not_token;
+Token null_token;
+Token of_token;
+Token or_token;
+Token others_token;
+Token out_token;
+Token overriding_token;
+Token package_token;
+Token pragma_token;
+Token private_token;
+Token procedure_token;
+Token protected_token;
+Token raise_token;
+Token range_token;
+Token record_token;
+Token rem_token;
+Token renames_token;
+Token requeue_token;
+Token return_token;
+Token reverse_token;
+Token select_token;
+Token separate_token;
+Token some_token;
+Token subtype_token;
+Token synchronized_token;
+Token tagged_token;
+Token task_token;
+Token terminate_token;
+Token then_token;
+Token type_token;
+Token until_token;
+Token use_token;
+Token when_token;
+Token while_token;
+Token with_token;
+Token xor_token;
+
+Compilation_Unit ::= [library_item] [ws_list];
+
+library_item ::=
+  library_unit_declaration;
+
+library_unit_declaration ::=
+  package_declaration;
+
+package_declaration ::=
+  package_ws identifier_ws is_ws
+    [{basic_declarative_item} <public_item_list>]
+  end_ws [identifier_ws <end_name>] semicolon_ws
+;
+
+basic_declarative_item ::= package_declaration;
+
+identifier_ws ::=
+ identifier_token
+ |(ws_list) ws_list identifier_token;
+
+package_ws ::=
+ package_token
+ |(ws_list) ws_list package_token;
+
+is_ws ::=
+ is_token
+ |(ws_list) ws_list is_token;
+
+end_ws ::=
+ end_token
+ |(ws_list) ws_list end_token;
+
+semicolon_ws ::=
+ semicolon_token
+ |(ws_list) ws_list semicolon_token;
+
+ws_list ::=
+ comment_token
+ | space_token
+ | new_line_token
+ | error_token
+ | (ws_list) ws_list <left> ws_list <right>;
