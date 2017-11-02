@@ -16,9 +16,18 @@ package body Ada_LSP.Documents is
      (Self : in out Document;
       Item : LSP.Messages.TextDocumentItem)
    is
+      Root : Incr.Nodes.Node_Access;
+      Kind : Incr.Nodes.Node_Kind;
    begin
-      Incr.Documents.Constructors.Initialize (Self, null);
+      Self.Factory.Create_Node
+        (Prod     => 2,
+         Children => (1 .. 0 => <>),
+         Node     => Root,
+         Kind     => Kind);
+
+      Incr.Documents.Constructors.Initialize (Self, Root);
       Self.End_Of_Stream.Set_Text (Item.text);
+      Self.Commit;
    end Initialize;
 
    ------------
