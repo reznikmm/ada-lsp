@@ -35,6 +35,10 @@ package Ada_LSP.Documents is
      (Self   : aliased in out Document;
       Vector : LSP.Messages.TextDocumentContentChangeEvent_Vector);
 
+   not overriding procedure Get_Errors
+     (Self   : Document;
+      Errors : out LSP.Messages.Diagnostic_Vector);
+
 private
 
    type Document is new Incr.Documents.Document with record

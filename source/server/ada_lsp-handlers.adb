@@ -8,6 +8,10 @@ with League.Strings;
 
 package body Ada_LSP.Handlers is
 
+   function "+" (Text : Wide_Wide_String)
+      return League.Strings.Universal_String renames
+       League.Strings.To_Universal_String;
+
    -----------------------
    -- Exit_Notification --
    -----------------------
@@ -51,9 +55,15 @@ package body Ada_LSP.Handlers is
    is
       Document : constant Ada_LSP.Contexts.Document_Access :=
         Self.Context.Get_Document (Value.textDocument.uri);
+      Note     : LSP.Messages.PublishDiagnostics_Notification;
    begin
       Document.Apply_Changes (Value.contentChanges);
       Self.Context.Update_Document (Document);
+      Document.Get_Errors (Note.params.diagnostics);
+
+      Note.method := +"textDocument/publishDiagnostics";
+      Note.params.uri := Value.textDocument.uri;
+      Self.Server.Send_Notification (Note);
    end Text_Document_Did_Change;
 
    ----------------------------
