@@ -19,6 +19,7 @@ with Incr.Parsers.Incremental;
 
 package Ada_LSP.Contexts is
    type Context is tagged limited private;
+   type Document_Access is access all Ada_LSP.Documents.Document;
 
    not overriding procedure Initialize
      (Self : in out Context;
@@ -28,9 +29,16 @@ package Ada_LSP.Contexts is
      (Self  : in out Context;
       Item  : LSP.Messages.TextDocumentItem);
 
-private
+   not overriding function Get_Document
+     (Self : Context;
+      URI  : LSP.Messages.DocumentUri) return Document_Access;
 
-   type Document_Access is access all Ada_LSP.Documents.Document;
+   not overriding procedure Update_Document
+     (Self : in out Context;
+      Item : not null Document_Access);
+   --  Reparse document after changes
+
+private
 
    package Document_Maps is new Ada.Containers.Hashed_Maps
      (Key_Type        => LSP.Messages.DocumentUri,

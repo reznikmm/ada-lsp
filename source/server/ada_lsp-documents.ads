@@ -5,11 +5,15 @@
 -------------------------------------------------------------
 
 with LSP.Messages;
+with LSP.Types;
+
+with Ada_LSP.Ada_Parser_Data;
+
 with Incr.Documents;
 with Incr.Lexers.Incremental;
+with Incr.Nodes.Tokens;
 with Incr.Parsers.Incremental;
 with Incr.Version_Trees;
-with Ada_LSP.Ada_Parser_Data;
 
 package Ada_LSP.Documents is
 
@@ -25,6 +29,11 @@ package Ada_LSP.Documents is
       Lexer    : Incr.Lexers.Incremental.Incremental_Lexer_Access;
       Provider : Incr.Parsers.Incremental.Parser_Data_Providers.
         Parser_Data_Provider_Access);
+   --  Reparse document
+
+   not overriding procedure Apply_Changes
+     (Self   : aliased in out Document;
+      Vector : LSP.Messages.TextDocumentContentChangeEvent_Vector);
 
 private
 
@@ -33,5 +42,18 @@ private
       Factory   : aliased Ada_LSP.Ada_Parser_Data.Node_Factory
         (Document'Unchecked_Access);
    end record;
+
+   not overriding procedure Find_Token
+     (Self   : Document;
+      Place  : LSP.Messages.Position;
+      Token  : out Incr.Nodes.Tokens.Token_Access;
+      Offset : out LSP.Types.UTF_16_Index);
+   --  Find Token spanning over given Place. Return Offset of Place in the
+   --  Token.
+
+   not overriding function Find_Line
+     (Self : Document;
+      Line : LSP.Types.Line_Number) return Incr.Nodes.Tokens.Token_Access;
+   --  Return first token in the given line
 
 end Ada_LSP.Documents;

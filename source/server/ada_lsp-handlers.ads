@@ -36,6 +36,10 @@ private
      Value    : LSP.Messages.InitializeParams;
      Response : in out LSP.Messages.Initialize_Response);
 
+   overriding procedure Text_Document_Did_Change
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidChangeTextDocumentParams);
+
    overriding procedure Text_Document_Did_Open
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidOpenTextDocumentParams);

@@ -10,6 +10,17 @@ package body Ada_LSP.Contexts is
 
    type Version_Tree_Access is access all Incr.Version_Trees.Version_Tree;
 
+   ------------------
+   -- Get_Document --
+   ------------------
+
+   not overriding function Get_Document
+     (Self : Context;
+      URI  : LSP.Messages.DocumentUri) return Document_Access is
+   begin
+      return Self.Documents (URI);
+   end Get_Document;
+
    ----------------
    -- Initialize --
    ----------------
@@ -42,5 +53,19 @@ package body Ada_LSP.Contexts is
          Self.Provider'Unchecked_Access);
       Self.Documents.Insert (Item.uri, Object);
    end Load_Document;
+
+   ---------------------
+   -- Update_Document --
+   ---------------------
+
+   not overriding procedure Update_Document
+     (Self : in out Context;
+      Item : not null Document_Access) is
+   begin
+      Item.Update
+        (Self.Incr_Parser,
+         Self.Incr_Lexer'Unchecked_Access,
+         Self.Provider'Unchecked_Access);
+   end Update_Document;
 
 end Ada_LSP.Contexts;

@@ -41,6 +41,21 @@ package body Ada_LSP.Handlers is
       Self.Context.Initialize (Root);
    end Initialize_Request;
 
+   ------------------------------
+   -- Text_Document_Did_Change --
+   ------------------------------
+
+   overriding procedure Text_Document_Did_Change
+     (Self  : access Message_Handler;
+      Value : LSP.Messages.DidChangeTextDocumentParams)
+   is
+      Document : constant Ada_LSP.Contexts.Document_Access :=
+        Self.Context.Get_Document (Value.textDocument.uri);
+   begin
+      Document.Apply_Changes (Value.contentChanges);
+      Self.Context.Update_Document (Document);
+   end Text_Document_Did_Change;
+
    ----------------------------
    -- Text_Document_Did_Open --
    ----------------------------
