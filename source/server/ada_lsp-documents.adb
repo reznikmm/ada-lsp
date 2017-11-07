@@ -4,9 +4,9 @@
 --  License-Filename: LICENSE
 -------------------------------------------------------------
 
+with League.String_Vectors;
 with League.Strings;
 
-with Ada_LSP.Ada_Lexers;
 with Ada_LSP.Documents.Debug;
 
 package body Ada_LSP.Documents is
@@ -14,9 +14,6 @@ package body Ada_LSP.Documents is
    function "+" (Text : Wide_Wide_String)
       return League.Strings.Universal_String renames
        League.Strings.To_Universal_String;
-
-   function Is_New_Line
-     (Token : Incr.Nodes.Tokens.Token_Access) return Boolean;
 
    function Token_Column
      (Token : Incr.Nodes.Tokens.Token_Access;
@@ -77,7 +74,7 @@ package body Ada_LSP.Documents is
             else
                Text := First.Text (Now);
                Text.Replace
-                 (Low  => Natural (First_Offset) + 1,
+                 (Low  => First_Offset,
                   High => Text.Length,
                   By   => Change.text);
                First.Set_Text (Text);
@@ -85,7 +82,7 @@ package body Ada_LSP.Documents is
                Text := Last.Text (Now);
                Text.Replace
                  (Low  => 1,
-                  High => Natural (Last_Offset),
+                  High => Last_Offset - 1,
                   By   => League.Strings.Empty_Universal_String);
                Last.Set_Text (Text);
                Last := Last.Previous_Token (Now);
@@ -129,19 +126,31 @@ package body Ada_LSP.Documents is
          if Node.Local_Errors (Time) then
             if Node.Is_Token then
                declare
+                  use type LSP.Types.Line_Number;
                   use type LSP.Types.UTF_16_Index;
 
                   Token : constant Incr.Nodes.Tokens.Token_Access :=
                     Incr.Nodes.Tokens.Token_Access (Node);
+                  Text : constant League.Strings.Universal_String :=
+                    Token.Text (Time);
+                  List : constant League.String_Vectors.Universal_String_Vector
+                    := Text.Split (Incr.Nodes.LF);
                   Error : LSP.Messages.Diagnostic;
                   Span  : LSP.Messages.Span renames Error.span;
                begin
                   Span.first.line := LSP.Types.Line_Number (Line);
                   Span.first.character := Token_Column (Token, Time);
-                  Span.last.line := Span.first.line;
-                  Span.last.character := Span.first.character +
-                    LSP.Types.UTF_16_Index
-                      (Token.Span (Incr.Nodes.Text_Length, Time));
+
+                  if List.Length > 1 then
+                     Span.last.line := Span.first.line +
+                       LSP.Types.Line_Number (List.Length - 1);
+                     Span.last.character :=
+                       LSP.Types.UTF_16_Index (List (List.Length).Length);
+                  else
+                     Span.last.line := Span.first.line;
+                     Span.last.character := Span.first.character +
+                       LSP.Types.UTF_16_Index (Text.Length);
+                  end if;
 
                   Error.message := Error_Message;
                   Errors.Append (Error);
@@ -292,17 +301,6 @@ package body Ada_LSP.Documents is
       Self.Commit;
    end Initialize;
 
-   -----------------
-   -- Is_New_Line --
-   -----------------
-
-   function Is_New_Line
-     (Token : Incr.Nodes.Tokens.Token_Access) return Boolean is
-   begin
-      return Ada_LSP.Ada_Lexers.Token (Token.Kind) in
-        Ada_LSP.Ada_Lexers.New_Line_Token;
-   end Is_New_Line;
-
    ------------------
    -- Token_Column --
    ------------------
@@ -317,9 +315,24 @@ package body Ada_LSP.Documents is
       Result : LSP.Types.UTF_16_Index := 0;
       Prev   : Incr.Nodes.Tokens.Token_Access := Token.Previous_Token (Time);
    begin
-      while Prev /= null and then not Is_New_Line (Prev) loop
-         Result := Result +
-           LSP.Types.UTF_16_Index (Prev.Span (Incr.Nodes.Text_Length, Time));
+      while Prev /= null loop
+         declare
+            Text : constant League.Strings.Universal_String :=
+              Prev.Text (Time);
+            List : constant League.String_Vectors.Universal_String_Vector :=
+              Text.Split (Incr.Nodes.LF);
+         begin
+            if List.Length > 1 then
+               Result := Result + LSP.Types.UTF_16_Index
+                 (List (List.Length).Length);
+
+               exit;
+            else
+               Result := Result + LSP.Types.UTF_16_Index
+                 (Prev.Span (Incr.Nodes.Text_Length, Time));
+            end if;
+         end;
+
          Prev := Prev.Previous_Token (Time);
       end loop;
 
