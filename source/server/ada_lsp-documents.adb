@@ -7,6 +7,7 @@
 with League.Strings;
 
 with Ada_LSP.Ada_Lexers;
+with Ada_LSP.Documents.Debug;
 
 package body Ada_LSP.Documents is
 
@@ -336,6 +337,7 @@ package body Ada_LSP.Documents is
       Provider : Incr.Parsers.Incremental.Parser_Data_Providers.
                    Parser_Data_Provider_Access) is
    begin
+      Ada_LSP.Documents.Debug.Dump (Self, "before.xml", Provider.all);
       Parser.Run
         (Lexer     => Lexer,
          Provider  => Provider,
@@ -344,6 +346,7 @@ package body Ada_LSP.Documents is
          Reference => Self.Reference);
       Self.Reference := Self.History.Changing;
       Self.Commit;
+      Ada_LSP.Documents.Debug.Dump (Self, "after.xml", Provider.all);
    end Update;
 
 end Ada_LSP.Documents;
