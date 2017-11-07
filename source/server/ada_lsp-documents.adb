@@ -41,17 +41,36 @@ package body Ada_LSP.Documents is
             Text  : League.Strings.Universal_String;
             First : Incr.Nodes.Tokens.Token_Access;
             Last  : Incr.Nodes.Tokens.Token_Access;
-            First_Offset : LSP.Types.UTF_16_Index;
-            Last_Offset  : LSP.Types.UTF_16_Index;
+            First_Offset : Positive;
+            Last_Offset  : Positive;
+            First_Extra  : LSP.Types.UTF_16_Index;
+            Last_Extra   : LSP.Types.UTF_16_Index;
          begin
-            Self.Find_Token (Change.span.Value.first, First, First_Offset);
-            Self.Find_Token (Change.span.Value.last, Last, Last_Offset);
+            Self.Find_Token
+              (Line   => Change.span.Value.first.line,
+               Column => Change.span.Value.first.character,
+               Time   => Now,
+               Token  => First,
+               Offset => First_Offset,
+               Extra  => First_Extra);
+
+            Self.Find_Token
+              (Line   => Change.span.Value.last.line,
+               Column => Change.span.Value.last.character,
+               Time   => Now,
+               Token  => Last,
+               Offset => Last_Offset,
+               Extra  => Last_Extra);
 
             if First = Last then
+               if First = null then
+                  First := Self.End_Of_Stream;
+               end if;
+
                Text := First.Text (Now);
                Text.Replace
-                 (Low  => Natural (First_Offset) + 1,
-                  High => Natural (Last_Offset),
+                 (Low  => First_Offset,
+                  High => Last_Offset - 1,
                   By   => Change.text);
                First.Set_Text (Text);
             else
@@ -148,64 +167,105 @@ package body Ada_LSP.Documents is
       Collect_Errors (Self.Ultra_Root, 0, Self.Reference);
    end Get_Errors;
 
-   ---------------
-   -- Find_Line --
-   ---------------
-
-   not overriding function Find_Line
-     (Self : Document;
-      Line : LSP.Types.Line_Number) return Incr.Nodes.Tokens.Token_Access
-   is
-      Target : constant Natural := Natural (Line);
-      Now    : constant Incr.Version_Trees.Version := Self.History.Changing;
-      Node   : Incr.Nodes.Node_Access := Self.Ultra_Root;
-      Child  : Incr.Nodes.Node_Access;
-      Offset : Natural := 0;
-      Span   : Natural;
-   begin
-      while not Node.Is_Token loop
-         for J in 1 .. Node.Arity loop
-            Child := Node.Child (J, Now);
-            Span := Child.Span (Incr.Nodes.Line_Count, Now);
-            if Offset + Span < Target then
-               Offset := Offset + Span;
-            else
-               Node := Child;
-               exit;
-            end if;
-         end loop;
-      end loop;
-
-      return Incr.Nodes.Tokens.Token_Access (Node).Next_Token (Now);
-   end Find_Line;
-
    ----------------
    -- Find_Token --
    ----------------
 
    not overriding procedure Find_Token
      (Self   : Document;
-      Place  : LSP.Messages.Position;
+      Line   : LSP.Types.Line_Number;
+      Column : LSP.Types.UTF_16_Index;
+      Time   : Incr.Version_Trees.Version;
       Token  : out Incr.Nodes.Tokens.Token_Access;
-      Offset : out LSP.Types.UTF_16_Index)
+      Offset : out Positive;
+      Extra  : out LSP.Types.UTF_16_Index)
    is
+      use type Incr.Nodes.Node_Access;
       use type Incr.Nodes.Tokens.Token_Access;
       use type LSP.Types.UTF_16_Index;
 
-      Now : constant Incr.Version_Trees.Version := Self.History.Changing;
-   begin
-      Offset := Place.character;
-      Token := Self.Find_Line (Place.line);
+      function Get_Rest
+        (Text : League.Strings.Universal_String) return Natural;
+      --  Number of characters in Text from Offset till LF or end of Text
 
-      while Token /= null and then not Is_New_Line (Token) loop
-         declare
-            Span : constant LSP.Types.UTF_16_Index := LSP.Types.UTF_16_Index
-              (Token.Span (Incr.Nodes.Text_Length, Now));
-         begin
-            exit when Offset < Span;
-            Offset := Offset - Span;
-            Token := Token.Next_Token (Now);
-         end;
+      --------------
+      -- Get_Rest --
+      --------------
+
+      function Get_Rest
+        (Text : League.Strings.Universal_String) return Natural
+      is
+         Last : Natural := Text.Index (Offset, Incr.Nodes.LF);
+      begin
+         if Last = 0 then
+            Last := Text.Length;
+         else
+            Last := Last - 1;
+         end if;
+
+         return Last - Offset + 1;
+      end Get_Rest;
+
+      Rest   : Natural;
+      Text   : League.Strings.Universal_String;
+      Node   : Incr.Nodes.Node_Access := Self.Ultra_Root;
+      Skip   : Natural := Natural (Line);  --  N of lines or chars to skip
+      Child  : Incr.Nodes.Node_Access;
+      Span   : Natural;
+   begin
+      Offset := 1;
+      Extra := Column;
+
+      while Token = null and Node /= null loop
+         for J in 1 .. Node.Arity loop
+            Child := Node.Child (J, Time);
+            Span := Child.Span (Incr.Nodes.Line_Count, Time);
+
+            if Skip <= Span then
+               if Child.Is_Token then
+                  Token := Incr.Nodes.Tokens.Token_Access (Child);
+               else
+                  Node := Child;
+               end if;
+
+               exit;
+            elsif J = Node.Arity then
+               Node := null;
+            else
+               Skip := Skip - Span;
+            end if;
+         end loop;
+      end loop;
+
+      if Token = null then  --  No such a line
+         return;
+      else
+         --  Find Offset of the first character in the line
+         Text := Token.Text (Time);
+         while Skip > 0 loop
+            Offset := Text.Index (Offset, Incr.Nodes.LF) + 1;
+            Skip := Skip - 1;
+         end loop;
+      end if;
+
+      while Extra > 0 loop
+         Rest := Get_Rest (Text);
+
+         if Rest >= Positive (Extra) then
+            Offset := Offset + Positive (Extra);
+            Extra := 0;
+         else
+            Offset := Offset + Rest;
+            Extra := Extra - LSP.Types.UTF_16_Index (Rest);
+
+            if Offset > Text.Length then
+               Token := Token.Next_Token (Time);
+               Text := Token.Text (Time);
+               Offset := 1;
+            else  --  We have found LF before Column exceeded
+               exit;
+            end if;
+         end if;
       end loop;
    end Find_Token;
 

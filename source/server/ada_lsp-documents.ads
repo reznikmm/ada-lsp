@@ -49,15 +49,16 @@ private
 
    not overriding procedure Find_Token
      (Self   : Document;
-      Place  : LSP.Messages.Position;
+      Line   : LSP.Types.Line_Number;
+      Column : LSP.Types.UTF_16_Index;
+      Time   : Incr.Version_Trees.Version;
       Token  : out Incr.Nodes.Tokens.Token_Access;
-      Offset : out LSP.Types.UTF_16_Index);
-   --  Find Token spanning over given Place. Return Offset of Place in the
-   --  Token.
-
-   not overriding function Find_Line
-     (Self : Document;
-      Line : LSP.Types.Line_Number) return Incr.Nodes.Tokens.Token_Access;
-   --  Return first token in the given line
+      Offset : out Positive;
+      Extra  : out LSP.Types.UTF_16_Index);
+   --  Find Token spanning over given Line:Column.
+   --  Set Offset to corresponding index in Token.Text (Time).
+   --  If Line exceeds total line count return null Token.
+   --  If Column exceeds line length return last Token in the line and set
+   --  Extra to exceed count.
 
 end Ada_LSP.Documents;
