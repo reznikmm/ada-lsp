@@ -50,6 +50,11 @@ private package LSP.Servers.Handlers is
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Notification_Handler_Access);
 
+   function Do_Highlight
+    (Stream  : access Ada.Streams.Root_Stream_Type'Class;
+     Handler : not null LSP.Message_Handlers.Request_Handler_Access)
+      return LSP.Messages.ResponseMessage'Class;
+
    function Do_Hover
     (Stream  : access Ada.Streams.Root_Stream_Type'Class;
      Handler : not null LSP.Message_Handlers.Request_Handler_Access)

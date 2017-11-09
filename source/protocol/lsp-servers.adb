@@ -71,7 +71,7 @@ package body LSP.Servers is
          (+"textDocument/signatureHelp", Handlers.Do_Signature_Help'Access),
          (+"textDocument/definition", Handlers.Do_Definition'Access),
          (+"textDocument/references", Handlers.Do_References'Access),
-         (+"textDocument/documentHighlight", Handlers.Do_Not_Found'Access),
+         (+"textDocument/documentHighlight", Handlers.Do_Highlight'Access),
          (+"textDocument/documentSymbol", Handlers.Do_Document_Symbol'Access),
          (+"workspace/symbol", Handlers.Do_Workspace_Symbol'Access),
          (+"textDocument/codeAction", Handlers.Do_Code_Action'Access),

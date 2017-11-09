@@ -2370,6 +2370,18 @@ package LSP.Messages is
       kind: DocumentHighlightKind;
    end record;
 
+   not overriding procedure Write_DocumentHighlight
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentHighlight);
+   for DocumentHighlight'Write use Write_DocumentHighlight;
+
+   package DocumentHighlight_Vectors is new Ada.Containers.Vectors
+     (Positive, DocumentHighlight);
+
+   type Highlight_Response is new ResponseMessage with record
+      result: DocumentHighlight_Vectors.Vector;
+   end record;
+
    --```typescript
    --interface DocumentSymbolParams {
    --	/**
@@ -2930,6 +2942,10 @@ private
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : ExecuteCommandOptions);
 
+   not overriding procedure Write_Highlight_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Highlight_Response);
+
    not overriding procedure Write_Hover
      (S : access Ada.Streams.Root_Stream_Type'Class;
       V : Hover);
@@ -3000,6 +3016,7 @@ private
    for DocumentLinkOptions'Write use Write_DocumentLinkOptions;
    for ExecuteCommand_Response'Write use Write_ExecuteCommand_Response;
    for ExecuteCommandOptions'Write use Write_ExecuteCommandOptions;
+   for Highlight_Response'Write use Write_Highlight_Response;
    for Hover'Write use Write_Hover;
    for Hover_Response'Write use Write_Hover_Response;
    for Initialize_Response'Write use Write_Initialize_Response;

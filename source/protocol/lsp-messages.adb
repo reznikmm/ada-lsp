@@ -1138,6 +1138,29 @@ package body LSP.Messages is
                 (DiagnosticSeverity'Pos (V)) + 1));
    end Write_DiagnosticSeverity;
 
+   -----------------------------
+   -- Write_DocumentHighlight --
+   -----------------------------
+
+   not overriding procedure Write_DocumentHighlight
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : DocumentHighlight)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      JS.Key (+"range");
+      Span'Write (S, V.span);
+      JS.Key (+"kind");
+      JS.Write
+        (League.JSON.Values.To_JSON_Value
+           (League.Holders.Universal_Integer
+                (DocumentHighlightKind'Pos (V.kind)) + 1));
+
+      JS.End_Object;
+   end Write_DocumentHighlight;
+
    -------------------------------
    -- Write_DocumentLinkOptions --
    -------------------------------
@@ -1205,6 +1228,33 @@ package body LSP.Messages is
       Write_String_Vector (JS, +"commands", V.commands);
       JS.End_Object;
    end Write_ExecuteCommandOptions;
+
+   ------------------------------
+   -- Write_Highlight_Response --
+   ------------------------------
+
+   not overriding procedure Write_Highlight_Response
+     (S : access Ada.Streams.Root_Stream_Type'Class;
+      V : Highlight_Response)
+   is
+      JS : League.JSON.Streams.JSON_Stream'Class renames
+        League.JSON.Streams.JSON_Stream'Class (S.all);
+   begin
+      JS.Start_Object;
+      Write_Response_Prexif (S, V);
+      JS.Key (+"result");
+
+      if V.result.Is_Empty then
+         JS.Write (League.JSON.Arrays.Empty_JSON_Array.To_JSON_Value);
+      else
+         JS.Start_Array;
+         for Item of V.result loop
+            DocumentHighlight'Write (S, Item);
+         end loop;
+         JS.End_Array;
+      end if;
+      JS.End_Object;
+   end Write_Highlight_Response;
 
    -----------------
    -- Write_Hover --

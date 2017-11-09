@@ -75,6 +75,11 @@ procedure LSP_Test is
      Value    : LSP.Messages.CodeActionParams;
      Response : in out LSP.Messages.CodeAction_Response);
 
+   overriding procedure Text_Document_Highlight_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Highlight_Response);
+
    overriding procedure Text_Document_Hover_Request
     (Self     : access Message_Handler;
      Value    : LSP.Messages.TextDocumentPositionParams;
@@ -276,7 +281,7 @@ procedure LSP_Test is
       Self.Documents.Replace (Value.textDocument.uri, Document);
    end Text_Document_Did_Change;
 
------------------------------
+   -----------------------------
    -- Text_Document_Did_Close --
    -----------------------------
 
@@ -331,6 +336,31 @@ procedure LSP_Test is
    begin
       Self.Server.Stop;
    end Exit_Notification;
+
+   -------------------------------------
+   -- Text_Document_Highlight_Request --
+   -------------------------------------
+
+   overriding procedure Text_Document_Highlight_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Highlight_Response)
+   is
+      pragma Unreferenced (Response);
+      Document : LSP_Documents.Document renames
+        Self.Documents (Value.textDocument.uri);
+      Lookup : constant LSP_Documents.Lookup_Result :=
+        Document.Lookup (Value.position);
+   begin
+      case Lookup.Kind is
+         when LSP_Documents.Identifier =>
+            null;
+         when LSP_Documents.None
+            | LSP_Documents.Pragma_Name
+            | LSP_Documents.Attribute_Designator =>
+            null;
+      end case;
+   end Text_Document_Highlight_Request;
 
    ---------------------------------
    -- Text_Document_Hover_Request --

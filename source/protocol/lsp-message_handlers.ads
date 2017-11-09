@@ -35,6 +35,11 @@ package LSP.Message_Handlers is
      Value    : LSP.Messages.TextDocumentPositionParams;
      Response : in out LSP.Messages.Hover_Response) is null;
 
+   not overriding procedure Text_Document_Highlight_Request
+    (Self     : access Request_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Highlight_Response) is null;
+
    not overriding procedure Text_Document_References_Request
     (Self     : access Request_Handler;
      Value    : LSP.Messages.ReferenceParams;
