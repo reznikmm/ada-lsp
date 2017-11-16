@@ -1,20 +1,21 @@
-# ada_lsp
-Language Server Protocol for Ada
+ada-lsp
+=======
 
-## Status of the project
+[![Build Status](https://travis-ci.org/reznikmm/ada-lsp.svg?branch=master)](https://travis-ci.org/reznikmm/ada-lsp)
+[![reuse compliant](https://img.shields.io/badge/reuse-compliant-green.svg)](https://reuse.software/)
 
-Ada binding of the protocol is (mostly) implemented, but only from server's
-point of view. The Ada Language Server isn't implemented yet. There is a 'demo'
-to check how the binding works.
+> Language Server Protocol for Ada
 
-## Building
-The dependency is
- * [Matreshka](https://github.com/reznikmm/matreshka) - latest trunk,
-(at least 2017-10-13). AMF isn't requred/used.
-See [Installation guide](http://forge.ada-ru.org/matreshka/wiki/Guide)
+The goal of this project is to provide implementation of Language Server
+Protocol ([LSP](https://github.com/Microsoft/language-server-protocol))
+for Ada.
 
-* [Node.js](https://nodejs.org) - to prepare VS Code extension
-* [VS Code](https://code.visualstudio.com) - to test the protocol binding
+> The Language Server protocol is used between a tool (the client) and
+> a language smartness provider (the server) to integrate features like
+> auto complete, goto definition, find all references and alike into
+> the tool.
+
+## Install
 
 Run:
 ```
@@ -23,9 +24,27 @@ cd ada-lsp
 make
 ```
 
-## Running a Demo
+### Dependencies
 
-The demo let you see common usage of LSP on Ada and check protocol messages.
+The dependency is
+ * [Matreshka](https://github.com/reznikmm/matreshka) - latest trunk,
+(at least 2017-10-13). AMF isn't requred/used.
+See [Installation guide](http://forge.ada-ru.org/matreshka/wiki/Guide)
+
+* [Node.js](https://nodejs.org) - to prepare VS Code extension
+* [VS Code](https://code.visualstudio.com) - to test the protocol binding
+
+### Status of the project
+
+Ada *binding* of the protocol is (mostly) implemented, but only from server's
+point of view.
+There is a 'demo' to check how *the binding* works.
+The Ada Language Server **isn't implemented yet**.
+
+## Usage
+### Running a Demo
+
+The demo let you see common usage of LSP for Ada and explore protocol messages.
 
 Prepare Ada extension and run VS code:
 ```
@@ -55,5 +74,15 @@ with LSP.Generic_Optional;
 * Press `Ctrl+Shft+O` and see list of local symbols.
 * Press `Ctrl+T` and see list of global symbols.
 
-## Build Status
-[![Build Status](https://travis-ci.org/reznikmm/ada-lsp.svg?branch=master)](https://travis-ci.org/reznikmm/ada-lsp)
+## Maintainer
+
+[@MaximReznik](https://github.com/reznikmm).
+
+## Contribute
+
+Feel free to dive in!
+[Open an issue](https://github.com/reznikmm/ada-lsp/issues/new) or submit PRs.
+
+## License
+
+[MIT](LICENSE) © Maxim Reznik

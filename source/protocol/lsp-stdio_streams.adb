@@ -1,3 +1,9 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
 with GNAT.Sockets;
 with Interfaces.C;
 with Ada.Unchecked_Conversion;

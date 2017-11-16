@@ -1,3 +1,9 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
 with Ada.Characters.Latin_1;
 
 with League.JSON.Arrays;

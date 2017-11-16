@@ -1,3 +1,9 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
 with League.JSON.Objects;
 with League.JSON.Streams;
 with League.Strings.Hash;

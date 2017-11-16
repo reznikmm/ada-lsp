@@ -1,3 +1,9 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
 private with GNAT.OS_Lib;
 
 private with League.Regexps;

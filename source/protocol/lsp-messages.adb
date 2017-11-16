@@ -1,15 +1,13 @@
+--  Copyright (c) 2017 Maxim Reznik <reznikmm@gmail.com>
+--
+--  SPDX-License-Identifier: MIT
+--  License-Filename: LICENSE
+-------------------------------------------------------------
+
 with League.Holders;
 with League.JSON.Arrays;
 with League.JSON.Streams;
 with League.JSON.Values;
-
-------------------
--- LSP.Messages --
-------------------
-
-------------------
--- LSP.Messages --
-------------------
 
 package body LSP.Messages is
 
