@@ -99,85 +99,6 @@ package body Ada_LSP.Documents is
    end Apply_Changes;
 
    ----------------
-   -- Get_Errors --
-   ----------------
-
-   not overriding procedure Get_Errors
-     (Self   : Document;
-      Errors : out LSP.Messages.Diagnostic_Vector)
-   is
-      procedure Collect_Errors
-        (Node   : not null Incr.Nodes.Node_Access;
-         Line   : Natural;
-         Time   : Incr.Version_Trees.Version);
-
-      --------------------
-      -- Collect_Errors --
-      --------------------
-
-      procedure Collect_Errors
-        (Node   : not null Incr.Nodes.Node_Access;
-         Line   : Natural;
-         Time   : Incr.Version_Trees.Version)
-      is
-         Child       : Incr.Nodes.Node_Access;
-         Next_Line   : Natural := Line;
-      begin
-         if Node.Local_Errors (Time) then
-            if Node.Is_Token then
-               declare
-                  use type LSP.Types.Line_Number;
-                  use type LSP.Types.UTF_16_Index;
-
-                  Token : constant Incr.Nodes.Tokens.Token_Access :=
-                    Incr.Nodes.Tokens.Token_Access (Node);
-                  Text : constant League.Strings.Universal_String :=
-                    Token.Text (Time);
-                  List : constant League.String_Vectors.Universal_String_Vector
-                    := Text.Split (Incr.Nodes.LF);
-                  Error : LSP.Messages.Diagnostic;
-                  Span  : LSP.Messages.Span renames Error.span;
-               begin
-                  Span.first.line := LSP.Types.Line_Number (Line);
-                  Span.first.character := Token_Column (Token, Time);
-
-                  if List.Length > 1 then
-                     Span.last.line := Span.first.line +
-                       LSP.Types.Line_Number (List.Length - 1);
-                     Span.last.character :=
-                       LSP.Types.UTF_16_Index (List (List.Length).Length);
-                  else
-                     Span.last.line := Span.first.line;
-                     Span.last.character := Span.first.character +
-                       LSP.Types.UTF_16_Index (Text.Length);
-                  end if;
-
-                  Error.message := Error_Message;
-                  Errors.Append (Error);
-               end;
-            end if;
-         end if;
-
-         if not Node.Nested_Errors (Time) then
-            return;
-         end if;
-
-         for J in 1 .. Node.Arity loop
-            Child := Node.Child (J, Time);
-
-            if Child.Nested_Errors (Time) or Child.Local_Errors (Time) then
-               Collect_Errors (Child, Next_Line, Time);
-            end if;
-
-            Next_Line := Next_Line + Child.Span (Incr.Nodes.Line_Count, Time);
-         end loop;
-      end Collect_Errors;
-
-   begin
-      Collect_Errors (Self.Ultra_Root, 0, Self.Reference);
-   end Get_Errors;
-
-   ----------------
    -- Find_Token --
    ----------------
 
@@ -278,6 +199,85 @@ package body Ada_LSP.Documents is
          end if;
       end loop;
    end Find_Token;
+
+   ----------------
+   -- Get_Errors --
+   ----------------
+
+   not overriding procedure Get_Errors
+     (Self   : Document;
+      Errors : out LSP.Messages.Diagnostic_Vector)
+   is
+      procedure Collect_Errors
+        (Node   : not null Incr.Nodes.Node_Access;
+         Line   : Natural;
+         Time   : Incr.Version_Trees.Version);
+
+      --------------------
+      -- Collect_Errors --
+      --------------------
+
+      procedure Collect_Errors
+        (Node   : not null Incr.Nodes.Node_Access;
+         Line   : Natural;
+         Time   : Incr.Version_Trees.Version)
+      is
+         Child       : Incr.Nodes.Node_Access;
+         Next_Line   : Natural := Line;
+      begin
+         if Node.Local_Errors (Time) then
+            if Node.Is_Token then
+               declare
+                  use type LSP.Types.Line_Number;
+                  use type LSP.Types.UTF_16_Index;
+
+                  Token : constant Incr.Nodes.Tokens.Token_Access :=
+                    Incr.Nodes.Tokens.Token_Access (Node);
+                  Text : constant League.Strings.Universal_String :=
+                    Token.Text (Time);
+                  List : constant League.String_Vectors.Universal_String_Vector
+                    := Text.Split (Incr.Nodes.LF);
+                  Error : LSP.Messages.Diagnostic;
+                  Span  : LSP.Messages.Span renames Error.span;
+               begin
+                  Span.first.line := LSP.Types.Line_Number (Line);
+                  Span.first.character := Token_Column (Token, Time);
+
+                  if List.Length > 1 then
+                     Span.last.line := Span.first.line +
+                       LSP.Types.Line_Number (List.Length - 1);
+                     Span.last.character :=
+                       LSP.Types.UTF_16_Index (List (List.Length).Length);
+                  else
+                     Span.last.line := Span.first.line;
+                     Span.last.character := Span.first.character +
+                       LSP.Types.UTF_16_Index (Text.Length);
+                  end if;
+
+                  Error.message := Error_Message;
+                  Errors.Append (Error);
+               end;
+            end if;
+         end if;
+
+         if not Node.Nested_Errors (Time) then
+            return;
+         end if;
+
+         for J in 1 .. Node.Arity loop
+            Child := Node.Child (J, Time);
+
+            if Child.Nested_Errors (Time) or Child.Local_Errors (Time) then
+               Collect_Errors (Child, Next_Line, Time);
+            end if;
+
+            Next_Line := Next_Line + Child.Span (Incr.Nodes.Line_Count, Time);
+         end loop;
+      end Collect_Errors;
+
+   begin
+      Collect_Errors (Self.Ultra_Root, 0, Self.Reference);
+   end Get_Errors;
 
    ----------------
    -- Initialize --
