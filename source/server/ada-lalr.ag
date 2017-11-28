@@ -117,10 +117,12 @@ library_unit_declaration ::=
   package_declaration;
 
 package_declaration ::=
-  package_ws identifier_ws is_ws
+  package_ws defining_identifier is_ws
     [{basic_declarative_item} <public_item_list>]
   end_ws [identifier_ws <end_name>] semicolon_ws
 ;
+
+defining_identifier ::= identifier_ws;
 
 basic_declarative_item ::= package_declaration;
 

@@ -31,6 +31,8 @@ The dependency is
   (at least 2017-10-13). AMF isn't requred/used.
   See [Installation guide](http://forge.ada-ru.org/matreshka/wiki/Guide)
 
+* [increment](https://github.com/reznikmm/increment)
+  an incremental analysis library.
 * [Ada Pretty Printer](https://github.com/reznikmm/ada-pretty) library.
 * [Anagram](https://github.com/reznikmm/anagram) - parser generation Ada
   library .
