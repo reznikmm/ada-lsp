@@ -347,8 +347,9 @@ package body Ada_LSP.Documents is
      (Self     : aliased in out Document;
       Parser   : Incr.Parsers.Incremental.Incremental_Parser;
       Lexer    : Incr.Lexers.Incremental.Incremental_Lexer_Access;
-      Provider : Incr.Parsers.Incremental.Parser_Data_Providers.
-                   Parser_Data_Provider_Access) is
+      Provider : access Ada_LSP.Ada_Parser_Data.Provider'Class)
+   is
+      Prev : constant Incr.Version_Trees.Version := Self.Reference;
    begin
       Ada_LSP.Documents.Debug.Dump (Self, "before.xml", Provider.all);
       Parser.Run
@@ -359,7 +360,38 @@ package body Ada_LSP.Documents is
          Reference => Self.Reference);
       Self.Reference := Self.History.Changing;
       Self.Commit;
+      Self.Update_Symbols (Provider, Prev, Self.Ultra_Root);
       Ada_LSP.Documents.Debug.Dump (Self, "after.xml", Provider.all);
    end Update;
+
+   --------------------
+   -- Update_Symbols --
+   --------------------
+
+   not overriding procedure Update_Symbols
+     (Self      : in out Document;
+      Provider  : access Ada_LSP.Ada_Parser_Data.Provider'Class;
+      Reference : Incr.Version_Trees.Version;
+      Node      : Incr.Nodes.Node_Access)
+   is
+      Now   : constant Incr.Version_Trees.Version := Self.Reference;
+      Child : Incr.Nodes.Node_Access;
+   begin
+      if Provider.Is_Defining_Name (Node.Kind) then
+         Self.Symbols.Include
+           (Incr.Nodes.Node_Access (Node.Last_Token (Now)));
+         return;
+      end if;
+
+      for J in 1 .. Node.Arity loop
+         Child := Node.Child (J, Now);
+
+         if not Child.Exists (Reference) or else
+           Child.Nested_Changes (Reference, Now)
+         then
+            Self.Update_Symbols (Provider, Reference, Child);
+         end if;
+      end loop;
+   end Update_Symbols;
 
 end Ada_LSP.Documents;

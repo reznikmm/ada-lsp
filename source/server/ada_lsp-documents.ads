@@ -4,6 +4,9 @@
 --  License-Filename: LICENSE
 -------------------------------------------------------------
 
+private with Ada.Containers.Hashed_Sets;
+private with Incr.Nodes.Hash;
+
 with LSP.Messages;
 with LSP.Types;
 
@@ -27,8 +30,7 @@ package Ada_LSP.Documents is
      (Self     : aliased in out Document;
       Parser   : Incr.Parsers.Incremental.Incremental_Parser;
       Lexer    : Incr.Lexers.Incremental.Incremental_Lexer_Access;
-      Provider : Incr.Parsers.Incremental.Parser_Data_Providers.
-        Parser_Data_Provider_Access);
+      Provider : access Ada_LSP.Ada_Parser_Data.Provider'Class);
    --  Reparse document
 
    not overriding procedure Apply_Changes
@@ -41,7 +43,14 @@ package Ada_LSP.Documents is
 
 private
 
+   package Node_Sets is new Ada.Containers.Hashed_Sets
+     (Element_Type        => Incr.Nodes.Node_Access,
+      Hash                => Incr.Nodes.Hash,
+      Equivalent_Elements => Incr.Nodes."=",
+      "="                 => Incr.Nodes."=");
+
    type Document is new Incr.Documents.Document with record
+      Symbols   : Node_Sets.Set;
       Reference : Incr.Version_Trees.Version;
       Factory   : aliased Ada_LSP.Ada_Parser_Data.Node_Factory
         (Document'Unchecked_Access);
@@ -60,5 +69,11 @@ private
    --  If Line exceeds total line count return null Token.
    --  If Column exceeds line length return last Token in the line and set
    --  Extra to exceed count.
+
+   not overriding procedure Update_Symbols
+     (Self      : in out Document;
+      Provider  : access Ada_LSP.Ada_Parser_Data.Provider'Class;
+      Reference : Incr.Version_Trees.Version;
+      Node      : Incr.Nodes.Node_Access);
 
 end Ada_LSP.Documents;
