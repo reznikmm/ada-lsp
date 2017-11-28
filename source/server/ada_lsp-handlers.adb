@@ -6,6 +6,8 @@
 
 with League.Strings;
 
+with LSP.Types;
+
 package body Ada_LSP.Handlers is
 
    function "+" (Text : Wide_Wide_String)
@@ -32,6 +34,8 @@ package body Ada_LSP.Handlers is
    is
       Root : League.Strings.Universal_String;
    begin
+      Response.result.capabilities.documentSymbolProvider :=
+        LSP.Types.Optional_True;
       Response.result.capabilities.textDocumentSync :=
         (Is_Set => True, Is_Number => True, Value => LSP.Messages.Incremental);
 
@@ -77,5 +81,20 @@ package body Ada_LSP.Handlers is
    begin
       Self.Context.Load_Document (Value.textDocument);
    end Text_Document_Did_Open;
+
+   ----------------------------------
+   -- Text_Document_Symbol_Request --
+   ----------------------------------
+
+   overriding procedure Text_Document_Symbol_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.DocumentSymbolParams;
+     Response : in out LSP.Messages.Symbol_Response)
+   is
+      Document : constant Ada_LSP.Contexts.Document_Access :=
+        Self.Context.Get_Document (Value.textDocument.uri);
+   begin
+      Document.Get_Symbols (Response.result);
+   end Text_Document_Symbol_Request;
 
 end Ada_LSP.Handlers;
