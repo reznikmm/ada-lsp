@@ -41,6 +41,10 @@ package Ada_LSP.Documents is
      (Self   : Document;
       Errors : out LSP.Messages.Diagnostic_Vector);
 
+   not overriding procedure Get_Symbols
+     (Self   : Document;
+      Result : out LSP.Messages.SymbolInformation_Vector);
+
 private
 
    package Node_Sets is new Ada.Containers.Hashed_Sets
@@ -50,6 +54,7 @@ private
       "="                 => Incr.Nodes."=");
 
    type Document is new Incr.Documents.Document with record
+      URI       : LSP.Messages.DocumentUri;
       Symbols   : Node_Sets.Set;
       Reference : Incr.Version_Trees.Version;
       Factory   : aliased Ada_LSP.Ada_Parser_Data.Node_Factory

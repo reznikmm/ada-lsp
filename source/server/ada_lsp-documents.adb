@@ -19,6 +19,10 @@ package body Ada_LSP.Documents is
      (Token : Incr.Nodes.Tokens.Token_Access;
       Time  : Incr.Version_Trees.Version) return LSP.Types.UTF_16_Index;
 
+   function Token_Line
+     (Token : Incr.Nodes.Tokens.Token_Access;
+      Time  : Incr.Version_Trees.Version) return LSP.Types.Line_Number;
+
    Error_Message : constant LSP.Types.LSP_String := +"Syntax error";
 
    -------------------
@@ -279,6 +283,37 @@ package body Ada_LSP.Documents is
       Collect_Errors (Self.Ultra_Root, 0, Self.Reference);
    end Get_Errors;
 
+   -----------------
+   -- Get_Symbols --
+   -----------------
+
+   not overriding procedure Get_Symbols
+     (Self   : Document;
+      Result : out LSP.Messages.SymbolInformation_Vector) is
+   begin
+      for J of Self.Symbols loop
+         declare
+            use type LSP.Types.UTF_16_Index;
+            Item  : LSP.Messages.SymbolInformation;
+            Token : constant Incr.Nodes.Tokens.Token_Access :=
+              Incr.Nodes.Tokens.Token_Access (J);
+         begin
+            Item.name := Token.Text (Self.Reference);
+            Item.kind := LSP.Messages.Module;
+            Item.location.uri := Self.URI;
+            Item.location.span.first.character :=
+              Token_Column (Token, Self.Reference);
+            Item.location.span.first.line :=
+              Token_Line (Token, Self.Reference);
+            Item.location.span.last.character :=
+              Item.location.span.first.character
+                + LSP.Types.UTF_16_Index (Item.name.Length);
+            Item.location.span.last.line := Item.location.span.first.line;
+            Result.Append (Item);
+         end;
+      end loop;
+   end Get_Symbols;
+
    ----------------
    -- Initialize --
    ----------------
@@ -290,6 +325,7 @@ package body Ada_LSP.Documents is
       Root : Incr.Nodes.Node_Access;
       Kind : Incr.Nodes.Node_Kind;
    begin
+      Self.URI := Item.uri;
       Self.Factory.Create_Node
         (Prod     => 2,
          Children => (1 .. 0 => <>),
@@ -338,6 +374,27 @@ package body Ada_LSP.Documents is
 
       return Result;
    end Token_Column;
+
+   ----------------
+   -- Token_Line --
+   ----------------
+
+   function Token_Line
+     (Token : Incr.Nodes.Tokens.Token_Access;
+      Time  : Incr.Version_Trees.Version) return LSP.Types.Line_Number
+   is
+      use type Incr.Nodes.Node_Access;
+
+      Result : Natural := 0;
+      Prev   : Incr.Nodes.Node_Access := Token.Previous_Subtree (Time);
+   begin
+      while Prev /= null loop
+         Result := Result + Prev.Span (Incr.Nodes.Line_Count, Time);
+         Prev := Prev.Previous_Subtree (Time);
+      end loop;
+
+      return LSP.Types.Line_Number (Result);
+   end Token_Line;
 
    ------------
    -- Update --
