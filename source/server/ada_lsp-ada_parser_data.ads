@@ -12,7 +12,7 @@ package Ada_LSP.Ada_Parser_Data is
 
    package P renames Incr.Parsers.Incremental.Parser_Data_Providers;
 
-   type Provider is new P.Parser_Data_Provider with null record;
+   type Provider is abstract new P.Parser_Data_Provider with null record;
 
    overriding function Actions
      (Self : Provider) return P.Action_Table_Access;
@@ -26,6 +26,10 @@ package Ada_LSP.Ada_Parser_Data is
    overriding function Kind_Image
      (Self : Provider;
       Kind : Incr.Nodes.Node_Kind) return Wide_Wide_String;
+
+   not overriding function Is_Defining_Name
+     (Self : Provider;
+      Kind : Incr.Nodes.Node_Kind) return Boolean is abstract;
 
    type Node_Factory (Document : Incr.Documents.Document_Access) is
      new P.Node_Factory with null record;

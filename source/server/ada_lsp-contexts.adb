@@ -27,11 +27,40 @@ package body Ada_LSP.Contexts is
 
    not overriding procedure Initialize
      (Self : in out Context;
-      Root : League.Strings.Universal_String) is
+      Root : League.Strings.Universal_String)
+   is
+      function Starts_With (Left, Right : Wide_Wide_String) return Boolean;
+
+      -----------------
+      -- Starts_With --
+      -----------------
+
+      function Starts_With (Left, Right : Wide_Wide_String) return Boolean is
+      begin
+         return Left'Length >= Right'Length and then
+           Left (Left'First .. Left'First + Right'Length - 1) = Right;
+      end Starts_With;
    begin
+      for J in Self.Provider.Is_Defining_Name'Range loop
+         Self.Provider.Is_Defining_Name (J) :=
+           Starts_With (Self.Provider.Kind_Image (J), "defining");
+      end loop;
+
       Self.Root := Root;
       Self.Incr_Lexer.Set_Batch_Lexer (Self.Batch_Lexer'Unchecked_Access);
    end Initialize;
+
+   ----------------------
+   -- Is_Defining_Name --
+   ----------------------
+
+   overriding function Is_Defining_Name
+     (Self : Provider;
+      Kind : Incr.Nodes.Node_Kind) return Boolean is
+   begin
+      return Kind in Self.Is_Defining_Name'Range
+        and then Self.Is_Defining_Name (Kind);
+   end Is_Defining_Name;
 
    -------------------
    -- Load_Document --

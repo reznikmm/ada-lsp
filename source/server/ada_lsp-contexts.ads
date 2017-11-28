@@ -15,6 +15,7 @@ with Ada_LSP.Documents;
 with Ada_LSP.Ada_Lexers;
 with Ada_LSP.Ada_Parser_Data;
 with Incr.Lexers.Incremental;
+with Incr.Nodes;
 with Incr.Parsers.Incremental;
 
 package Ada_LSP.Contexts is
@@ -46,13 +47,23 @@ private
       Hash            => League.Strings.Hash,
       Equivalent_Keys => League.Strings."=");
 
+   type Kind_Map is array (Incr.Nodes.Node_Kind range <>) of Boolean;
+
+   type Provider is new Ada_LSP.Ada_Parser_Data.Provider with record
+      Is_Defining_Name : Kind_Map (108 .. 120);
+   end record;
+
+   overriding function Is_Defining_Name
+     (Self : Provider;
+      Kind : Incr.Nodes.Node_Kind) return Boolean;
+
    type Context is tagged limited record
       Root        : League.Strings.Universal_String;
       Documents   : Document_Maps.Map;
       Batch_Lexer : aliased Ada_LSP.Ada_Lexers.Batch_Lexer;
       Incr_Lexer  : aliased Incr.Lexers.Incremental.Incremental_Lexer;
       Incr_Parser : aliased Incr.Parsers.Incremental.Incremental_Parser;
-      Provider    : aliased Ada_LSP.Ada_Parser_Data.Provider;
+      Provider    : aliased Ada_LSP.Contexts.Provider;
    end record;
 
 end Ada_LSP.Contexts;
