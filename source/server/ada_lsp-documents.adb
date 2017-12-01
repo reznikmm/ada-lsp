@@ -431,13 +431,53 @@ package body Ada_LSP.Documents is
       Reference : Incr.Version_Trees.Version;
       Node      : Incr.Nodes.Node_Access)
    is
+      procedure Delete_Symbols (Node : Incr.Nodes.Node_Access);
+
       Now   : constant Incr.Version_Trees.Version := Self.Reference;
+
+      --------------------
+      -- Delete_Symbols --
+      --------------------
+
+      procedure Delete_Symbols (Node : Incr.Nodes.Node_Access) is
+         Child : Incr.Nodes.Node_Access;
+         Token : Incr.Nodes.Tokens.Token_Access;
+      begin
+         if Provider.Is_Defining_Name (Node.Kind) then
+            Token := Node.Last_Token (Reference);
+
+            if not Token.Exists (Now) then
+               Self.Symbols.Delete (Incr.Nodes.Node_Access (Token));
+            end if;
+
+            return;
+         end if;
+
+         for J in 1 .. Node.Arity loop
+            Child := Node.Child (J, Reference);
+            if not Child.Exists (Now) then
+               Delete_Symbols (Child);
+            end if;
+         end loop;
+      end Delete_Symbols;
+
       Child : Incr.Nodes.Node_Access;
    begin
       if Provider.Is_Defining_Name (Node.Kind) then
          Self.Symbols.Include
            (Incr.Nodes.Node_Access (Node.Last_Token (Now)));
          return;
+      end if;
+
+      if Node.Exists (Reference) and then
+        Node.Local_Changes (Reference, Now)
+      then
+         for J in 1 .. Node.Arity loop
+            Child := Node.Child (J, Reference);
+            if not Child.Exists (Now) then
+               Delete_Symbols (Child);
+            end if;
+         end loop;
       end if;
 
       for J in 1 .. Node.Arity loop
