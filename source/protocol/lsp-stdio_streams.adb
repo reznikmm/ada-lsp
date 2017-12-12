@@ -33,7 +33,7 @@ package body LSP.Stdio_Streams is
          nbyte  : C.size_t) return C.size_t
            with Import => True,
                 Convention => C,
-                Link_Name => "read";
+                External_Name => "read";
       Stdin   : constant GNAT.Sockets.Socket_Type := To_Ada (0);
       Request : GNAT.Sockets.Request_Type (GNAT.Sockets.N_Bytes_To_Read);
       Length  : Natural;
@@ -69,7 +69,7 @@ package body LSP.Stdio_Streams is
          nbyte  : C.size_t) return C.size_t
            with Import => True,
                 Convention => C,
-                Link_Name => "write";
+                External_Name => "write";
       pragma Unreferenced (Stream);
 
       Ignore : C.size_t := write (1, Item, Item'Length);
