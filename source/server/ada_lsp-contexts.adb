@@ -5,6 +5,7 @@
 -------------------------------------------------------------
 
 with Incr.Version_Trees;
+with Ada_LSP.Completion_Tokens;
 
 package body Ada_LSP.Contexts is
 
@@ -47,6 +48,16 @@ package body Ada_LSP.Contexts is
       return Self.Documents (URI);
    end Get_Document;
 
+   ------------------------------
+   -- Get_Parser_Data_Provider --
+   ------------------------------
+
+   not overriding function Get_Parser_Data_Provider
+     (Self : Context) return Ada_LSP.Ada_Parser_Data.Provider_Access is
+   begin
+      return Self.Provider'Unchecked_Access;
+   end Get_Parser_Data_Provider;
+
    ----------------
    -- Initialize --
    ----------------
@@ -74,6 +85,9 @@ package body Ada_LSP.Contexts is
 
       Self.Root := Root;
       Self.Incr_Lexer.Set_Batch_Lexer (Self.Batch_Lexer'Unchecked_Access);
+      Self.Add_Completion_Handler
+        (new Ada_LSP.Completion_Tokens.Completion_Handler
+               (Self'Unchecked_Access));
    end Initialize;
 
    ----------------------

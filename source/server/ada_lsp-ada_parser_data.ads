@@ -13,6 +13,7 @@ package Ada_LSP.Ada_Parser_Data is
    package P renames Incr.Parsers.Incremental.Parser_Data_Providers;
 
    type Provider is abstract new P.Parser_Data_Provider with null record;
+   type Provider_Access is access constant Provider'Class;
 
    overriding function Actions
      (Self : Provider) return P.Action_Table_Access;

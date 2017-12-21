@@ -50,6 +50,9 @@ package Ada_LSP.Contexts is
       Context : Ada_LSP.Completions.Context'Class;
       Result  : in out LSP.Messages.CompletionList);
 
+   not overriding function Get_Parser_Data_Provider
+     (Self : Context) return Ada_LSP.Ada_Parser_Data.Provider_Access;
+
 private
 
    package Document_Maps is new Ada.Containers.Hashed_Maps
