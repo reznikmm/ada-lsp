@@ -10,13 +10,39 @@ package body Ada_LSP.Contexts is
 
    type Version_Tree_Access is access all Incr.Version_Trees.Version_Tree;
 
+   ----------------------------
+   -- Add_Completion_Handler --
+   ----------------------------
+
+   not overriding procedure Add_Completion_Handler
+     (Self  : in out Context;
+      Value : not null Ada_LSP.Completions.Handler_Access) is
+   begin
+      Self.Completions.Append (Value);
+   end Add_Completion_Handler;
+
+   ----------------------
+   -- Fill_Completions --
+   ----------------------
+
+   not overriding procedure Fill_Completions
+     (Self    : Context;
+      Context : Ada_LSP.Completions.Context'Class;
+      Result  : in out LSP.Messages.CompletionList) is
+   begin
+      for J of Self.Completions loop
+         J.Fill_Completion_List (Context, Result);
+      end loop;
+   end Fill_Completions;
+
    ------------------
    -- Get_Document --
    ------------------
 
    not overriding function Get_Document
      (Self : Context;
-      URI  : LSP.Messages.DocumentUri) return Document_Access is
+      URI  : LSP.Messages.DocumentUri)
+        return Ada_LSP.Documents.Document_Access is
    begin
       return Self.Documents (URI);
    end Get_Document;
@@ -72,7 +98,7 @@ package body Ada_LSP.Contexts is
    is
       History : constant Version_Tree_Access :=
         new Incr.Version_Trees.Version_Tree;
-      Object : constant Document_Access :=
+      Object : constant Ada_LSP.Documents.Document_Access :=
         new Ada_LSP.Documents.Document (History);
    begin
       Object.Initialize (Item);
@@ -89,7 +115,7 @@ package body Ada_LSP.Contexts is
 
    not overriding procedure Update_Document
      (Self : in out Context;
-      Item : not null Document_Access) is
+      Item : not null Ada_LSP.Documents.Document_Access) is
    begin
       Item.Update
         (Self.Incr_Parser,

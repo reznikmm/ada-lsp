@@ -7,6 +7,7 @@
 with League.String_Vectors;
 with League.Strings;
 
+with Ada_LSP.Completions;
 with Ada_LSP.Documents.Debug;
 
 package body Ada_LSP.Documents is
@@ -203,6 +204,25 @@ package body Ada_LSP.Documents is
          end if;
       end loop;
    end Find_Token;
+
+   ----------------------------
+   -- Get_Completion_Context --
+   ----------------------------
+
+   not overriding procedure Get_Completion_Context
+     (Self     : Document;
+      Place    : LSP.Messages.Position;
+      Result   : in out Ada_LSP.Completions.Context)
+   is
+      Now    : constant Incr.Version_Trees.Version := Self.History.Changing;
+      Token  : Incr.Nodes.Tokens.Token_Access;
+      Offset : Positive;
+      Extra  : LSP.Types.UTF_16_Index;
+   begin
+      Self.Find_Token (Place.line, Place.character, Now, Token, Offset, Extra);
+      Result.Set_Token (Token, Offset);
+      Result.Set_Document (Self'Unchecked_Access);
+   end Get_Completion_Context;
 
    ----------------
    -- Get_Errors --

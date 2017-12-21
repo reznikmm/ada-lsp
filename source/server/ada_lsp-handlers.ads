@@ -49,4 +49,9 @@ private
      Value    : LSP.Messages.DocumentSymbolParams;
      Response : in out LSP.Messages.Symbol_Response);
 
+   overriding procedure Text_Document_Completion_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Completion_Response);
+
 end Ada_LSP.Handlers;

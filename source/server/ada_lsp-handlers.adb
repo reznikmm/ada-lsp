@@ -8,6 +8,9 @@ with League.Strings;
 
 with LSP.Types;
 
+with Ada_LSP.Completions;
+with Ada_LSP.Documents;
+
 package body Ada_LSP.Handlers is
 
    function "+" (Text : Wide_Wide_String)
@@ -33,7 +36,14 @@ package body Ada_LSP.Handlers is
       Response : in out LSP.Messages.Initialize_Response)
    is
       Root : League.Strings.Universal_String;
+      Completion_Characters : LSP.Types.LSP_String_Vector;
    begin
+      Completion_Characters.Append (+"'");
+
+      Response.result.capabilities.completionProvider :=
+        (Is_Set => True, Value =>
+           (resolveProvider   => LSP.Types.Optional_False,
+            triggerCharacters => Completion_Characters));
       Response.result.capabilities.documentSymbolProvider :=
         LSP.Types.Optional_True;
       Response.result.capabilities.textDocumentSync :=
@@ -49,6 +59,23 @@ package body Ada_LSP.Handlers is
       Self.Context.Initialize (Root);
    end Initialize_Request;
 
+   --------------------------------------
+   -- Text_Document_Completion_Request --
+   --------------------------------------
+
+   overriding procedure Text_Document_Completion_Request
+    (Self     : access Message_Handler;
+     Value    : LSP.Messages.TextDocumentPositionParams;
+     Response : in out LSP.Messages.Completion_Response)
+   is
+      Document : constant Ada_LSP.Documents.Document_Access :=
+        Self.Context.Get_Document (Value.textDocument.uri);
+      Context : Ada_LSP.Completions.Context;
+   begin
+      Document.Get_Completion_Context (Value.position, Context);
+      Self.Context.Fill_Completions (Context, Response.result);
+   end Text_Document_Completion_Request;
+
    ------------------------------
    -- Text_Document_Did_Change --
    ------------------------------
@@ -57,7 +84,7 @@ package body Ada_LSP.Handlers is
      (Self  : access Message_Handler;
       Value : LSP.Messages.DidChangeTextDocumentParams)
    is
-      Document : constant Ada_LSP.Contexts.Document_Access :=
+      Document : constant Ada_LSP.Documents.Document_Access :=
         Self.Context.Get_Document (Value.textDocument.uri);
       Note     : LSP.Messages.PublishDiagnostics_Notification;
    begin
@@ -91,7 +118,7 @@ package body Ada_LSP.Handlers is
      Value    : LSP.Messages.DocumentSymbolParams;
      Response : in out LSP.Messages.Symbol_Response)
    is
-      Document : constant Ada_LSP.Contexts.Document_Access :=
+      Document : constant Ada_LSP.Documents.Document_Access :=
         Self.Context.Get_Document (Value.textDocument.uri);
    begin
       Document.Get_Symbols (Response.result);

@@ -11,6 +11,7 @@ with LSP.Messages;
 with LSP.Types;
 
 with Ada_LSP.Ada_Parser_Data;
+limited with Ada_LSP.Completions;
 
 with Incr.Documents;
 with Incr.Lexers.Incremental;
@@ -21,6 +22,8 @@ with Incr.Version_Trees;
 package Ada_LSP.Documents is
 
    type Document is new Incr.Documents.Document with private;
+   type Document_Access is access all Ada_LSP.Documents.Document;
+   type Constant_Document_Access is access constant Ada_LSP.Documents.Document;
 
    not overriding procedure Initialize
      (Self : in out Document;
@@ -44,6 +47,11 @@ package Ada_LSP.Documents is
    not overriding procedure Get_Symbols
      (Self   : Document;
       Result : out LSP.Messages.SymbolInformation_Vector);
+
+   not overriding procedure Get_Completion_Context
+     (Self     : Document;
+      Place    : LSP.Messages.Position;
+      Result   : in out Ada_LSP.Completions.Context);
 
 private
 
